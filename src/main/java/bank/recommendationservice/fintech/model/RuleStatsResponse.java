@@ -13,6 +13,9 @@ public class RuleStatsResponse {
     @JsonProperty("stats")
     private List<RuleStatsDTO> stats;
 
+    public RuleStatsResponse() {
+    }
+
     public RuleStatsResponse(List<RuleStatsDTO> stats) {
         this.stats = stats;
     }
