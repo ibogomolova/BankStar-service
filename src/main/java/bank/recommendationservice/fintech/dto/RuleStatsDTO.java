@@ -11,7 +11,7 @@ import java.util.Objects;
 @Setter
 @Schema(description = "DTO для представления счетчика срабатываний динамических правил")
 public class RuleStatsDTO {
-    @Getter
+
     @JsonProperty("rule_id")
     private Long ruleId;
 
@@ -22,6 +22,7 @@ public class RuleStatsDTO {
         this.ruleId = ruleId;
         this.count = count;
     }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
