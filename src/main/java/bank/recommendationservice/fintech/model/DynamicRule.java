@@ -42,7 +42,7 @@ public class DynamicRule {
     @Schema(description = "Текст продукта", example = "Предлагаем вам кредитную карту с выгодными условиями")
     private String productText;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "dynamicRule")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "dynamicRule", orphanRemoval = true)
     @JsonProperty("rule")
     @Schema(description = "Список запросов для динамического правила")
     private List<DynamicRuleQuery> queries;
@@ -59,7 +59,11 @@ public class DynamicRule {
         if (this == object) return true;
         if (object == null || getClass() != object.getClass()) return false;
         DynamicRule that = (DynamicRule) object;
-        return Objects.equals(id, that.id) && Objects.equals(productName, that.productName) && Objects.equals(productId, that.productId) && Objects.equals(productText, that.productText) && Objects.equals(queries, that.queries);
+        return Objects.equals(id, that.id)
+                && Objects.equals(productName, that.productName)
+                && Objects.equals(productId, that.productId)
+                && Objects.equals(productText, that.productText)
+                && Objects.equals(queries, that.queries);
     }
 
     @Override

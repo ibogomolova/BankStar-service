@@ -1,9 +1,6 @@
 package bank.recommendationservice.fintech.exception;
 
-public class NoTransactionsFoundException extends RuntimeException {
-    public NoTransactionsFoundException() {
-    }
-
+public class NoTransactionsFoundException extends BaseNotFoundException {
     public NoTransactionsFoundException(String message) {
         super(message);
     }
