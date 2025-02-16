@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.Valid;
 import java.util.Collections;
 import java.util.List;
 
@@ -45,7 +46,7 @@ public class RecommendationDynamicRuleService {
      * @throws RulesNotFoundException если правило не может быть сохранено
      */
 
-    public DynamicRule addRule(DynamicRule rule) {
+    public DynamicRule addRule( DynamicRule rule) {
         logger.info("Добавление нового правила: {}", rule.toString());
         if (rule.getQueries() != null) {
             rule.getQueries().forEach(query -> {
