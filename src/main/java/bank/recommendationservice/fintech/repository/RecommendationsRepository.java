@@ -199,11 +199,26 @@ public class RecommendationsRepository {
         };
     }
 
+
+    /**
+     * Возвращает ID пользователя по имени пользователя.
+     *
+     * @param userName имя пользователя
+     * @return ID пользователя
+     * @throws NullPointerException если {@code userName} - {@code null}
+     */
     public UUID getUserIdByUserName(String userName) {
         String sql = "SELECT id FROM users WHERE username = ?";
         return jdbcTemplate.queryForObject(sql, new Object[]{userName}, UUID.class);
     }
 
+
+    /**
+     * Возвращает полное имя пользователя по его имени пользователя.
+     *
+     * @param username имя пользователя
+     * @return полное имя пользователя
+     */
     public String getFullNameByUsername(String username) {
         String sql = "SELECT first_name, last_name FROM users WHERE username = ?";
         return jdbcTemplate.queryForObject(sql, new Object[]{username}, (rs, rowNum) -> {
@@ -212,4 +227,19 @@ public class RecommendationsRepository {
             return firstName + " " + lastName;
         });
     }
+
+
+    /**
+     * Проверяет, существует ли пользователь с указанным именем.
+     *
+     * @param userName имя пользователя
+     * @return true, если пользователь существует, false - в противном случае
+     */
+    public boolean validateUserName(String userName) {
+        String sql = "SELECT COUNT(*) FROM users WHERE username = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, new Object[]{userName}, Integer.class);
+
+        return count != null && count > 0;
+    }
 }
+

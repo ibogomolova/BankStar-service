@@ -11,7 +11,6 @@ import com.pengrad.telegrambot.request.SendMessage;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -87,9 +86,29 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
         return UpdatesListener.CONFIRMED_UPDATES_ALL;
     }
 
-    private void handleRecommendationRequest(long chatId, String username) {
-        List<RecommendationDTO> response = recommendationService.getRecommendations(username);
-        String fullUserName = recommendationsRepository.getFullNameByUsername(username);
+
+        /**
+         * Обрабатывает запрос на получение рекомендаций.
+         * <p>
+         * Метод проверяет, существует ли пользователь с указанным именем.
+         * Если пользователь не существует, бот отправляет сообщение об ошибке.
+         * Если пользователь существует, бот отправляет список рекомендаций для него.
+         *
+         * @param chatId  ID чата, в котором был отправлен запрос
+         * @param userName имя пользователя, для которого нужно получить рекомендации
+         */
+    private void handleRecommendationRequest(long chatId, String userName) {
+        if (userName == null || userName.isEmpty()) {
+            throw new IllegalArgumentException("Имя пользователя не должно быть пустым");
+        }
+        boolean check = recommendationsRepository.validateUserName(userName);
+        if (!check) {
+            String answer = "Пользователь с именем " + userName + " не найден.";
+            SendMessage sendMessage = new SendMessage(chatId, answer);
+            telegramBot.execute(sendMessage);
+        }
+        List<RecommendationDTO> response = recommendationService.getRecommendations(userName);
+        String fullUserName = recommendationsRepository.getFullNameByUsername(userName);
         String result = "Рекомендации для " + fullUserName + ":\n";
         for (RecommendationDTO recommendation : response) {
             result += recommendation.toString() + "\n";
