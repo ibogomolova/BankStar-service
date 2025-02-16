@@ -1,9 +1,9 @@
 package bank.recommendationservice.fintech.service;
 
+import com.github.benmanes.caffeine.cache.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import com.github.benmanes.caffeine.cache.Cache;
 
 @Service
 public class CacheService {

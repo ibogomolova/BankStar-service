@@ -1,6 +1,7 @@
 package bank.recommendationservice.fintech.telegrambot.listener;
 
 import bank.recommendationservice.fintech.dto.RecommendationDTO;
+import bank.recommendationservice.fintech.exception.UserNotFoundException;
 import bank.recommendationservice.fintech.repository.RecommendationsRepository;
 import bank.recommendationservice.fintech.service.RecommendationService;
 import com.pengrad.telegrambot.TelegramBot;
@@ -11,7 +12,6 @@ import com.pengrad.telegrambot.request.SendMessage;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -76,11 +76,16 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
                     if (commandParts.length <= 1) {
                         SendMessage sendMessage = new SendMessage(chatId, "Пожалуйста, " +
                                 "укажите имя пользователя, через пробел, после команды /recommend.");
-
                         telegramBot.execute(sendMessage);
-                        return;
+                    } else {
+                        String userName = commandParts[1];
+                        if (userName != null && !userName.isEmpty()) {
+                            handleRecommendationRequest(chatId, userName);
+                        }
                     }
-                    handleRecommendationRequest(chatId, commandParts[1]);
+                } else {
+                    SendMessage sendMessage = new SendMessage(chatId, "Неизвестная команда");
+                    telegramBot.execute(sendMessage);
                 }
             }
         });
@@ -88,13 +93,27 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
     }
 
     private void handleRecommendationRequest(long chatId, String username) {
-        List<RecommendationDTO> response = recommendationService.getRecommendations(username);
-        String fullUserName = recommendationsRepository.getFullNameByUsername(username);
-        String result = "Рекомендации для " + fullUserName + ":\n";
-        for (RecommendationDTO recommendation : response) {
-            result += recommendation.toString() + "\n";
+        try {
+            List<RecommendationDTO> response = recommendationService.getRecommendations(username);
+            String fullUserName = recommendationsRepository.getFullNameByUsername(username);
+            if (fullUserName == null) {
+                SendMessage sendMessage = new SendMessage(chatId, "Пользователь не найден");
+                telegramBot.execute(sendMessage);
+            }
+            String result = "Рекомендации для " + fullUserName + ":\n";
+            if (response.isEmpty()) {
+                result += "Не удалось подобрать рекомендации для этого пользователя";
+            } else {
+                for (RecommendationDTO recommendation : response) {
+                    result += recommendation.toString() + "\n";
+                }
+                SendMessage sendMessage = new SendMessage(chatId, result);
+                telegramBot.execute(sendMessage);
+            }
+        } catch (UserNotFoundException e) {
+            logger.error("Ошибка при обработке рекомендаций для пользователя {}: {}", username, e.getMessage(), e);
+            SendMessage sendMessage = new SendMessage(chatId, "Пользователь не найден");
+            telegramBot.execute(sendMessage);
         }
-        SendMessage sendMessage = new SendMessage(chatId, result);
-        telegramBot.execute(sendMessage);
     }
 }
