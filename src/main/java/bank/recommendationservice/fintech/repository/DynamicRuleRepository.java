@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface DynamicRuleRepository extends JpaRepository<DynamicRule, Long> {
-    // Сюда добавить каке-то методы поиска, при надобности
+
 }
