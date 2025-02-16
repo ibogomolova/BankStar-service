@@ -2,7 +2,6 @@ package bank.recommendationservice.fintech.service;
 
 import bank.recommendationservice.fintech.exception.RulesNotFoundException;
 import bank.recommendationservice.fintech.model.DynamicRule;
-import bank.recommendationservice.fintech.model.DynamicRuleQuery;
 import bank.recommendationservice.fintech.repository.DynamicRuleQueryRepository;
 import bank.recommendationservice.fintech.repository.DynamicRuleRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +20,7 @@ public class RecommendationDynamicRuleService {
     private final DynamicRuleQueryRepository dynamicRuleQueryRepository;
     private final RuleStatsService ruleStatsService;
 
-    final Logger logger = LoggerFactory.getLogger(RecommendationDynamicRuleService.class);
+    private static final Logger logger = LoggerFactory.getLogger(RecommendationDynamicRuleService.class);
 
     public RecommendationDynamicRuleService(DynamicRuleRepository dynamicRuleRepository,
                                             DynamicRuleQueryRepository dynamicRuleQueryRepository,
@@ -68,21 +67,17 @@ public class RecommendationDynamicRuleService {
      * <p>
      *
      * @param id идентификатор правила, которое необходимо удалить
-     * @return удаленное правило
      * @throws RulesNotFoundException если правило с указанным идентификатором не найдено
      */
-    public DynamicRule deleteDynamicRule(Long id) {
-        logger.info("Удаление правила по id: {}", id);
+    @Transactional
+    public void deleteDynamicRule(Long id) {
+        logger.info("Удаление правила с id: {}", id);
+        if (!dynamicRuleRepository.existsById(id)) {
+            logger.error("Правило с id: {} не найдено", id);
+            throw new RulesNotFoundException("Не удалось удалить правило - правило не найдено ", id);
+        }
         ruleStatsService.deleteRuleStats(id);
-        DynamicRule ruleToRemove = dynamicRuleRepository.findById(id)
-                .orElseThrow(() -> new RulesNotFoundException("Правило не найдено!"));
-
-        List<DynamicRuleQuery> queries = dynamicRuleQueryRepository.findByDynamicRuleId(id);
-        dynamicRuleQueryRepository.deleteAll(queries);
-
-        dynamicRuleRepository.delete(ruleToRemove);
-
-        return ruleToRemove;
+        dynamicRuleRepository.deleteById(id);
     }
 
     /**
@@ -95,4 +90,3 @@ public class RecommendationDynamicRuleService {
         return Collections.unmodifiableList(dynamicRuleRepository.findAll());
     }
 }
-
