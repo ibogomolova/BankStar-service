@@ -77,30 +77,4 @@ public class DynamicRule {
                 ", queries=" + queries +
                 '}';
     }
-
-    /**
-     * Добавляет запрос к этому правилу.
-     *
-     * <p>
-     * Метод добавляет запрос к правилу и устанавливает динамическое правило запроса в это правило.
-     *
-     * @param query запрос, который добавляется
-     */
-    public void addQuery(DynamicRuleQuery query) {
-        queries.add(query);
-        query.setDynamicRule(this);
-    }
-
-    /**
-     * Удаляет запрос из списка запросов этого правила.
-     *
-     * <p>
-     * Метод удаляет запрос из списка запросов этого правила и убирает связь между запросом и этим правилом.
-     *
-     * @param query запрос, который удаляется
-     */
-    public void removeQuery(DynamicRuleQuery query) {
-        queries.remove(query);
-        query.setDynamicRule(null);
-    }
 }

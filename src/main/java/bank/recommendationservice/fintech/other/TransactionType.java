@@ -16,11 +16,6 @@ public enum TransactionType {
         this.transactionType = type;
     }
 
-    public static boolean isValidTransaction(String transactionType) {
-        return Arrays.stream(TransactionType.values())
-                .anyMatch(t -> t.getTransactionType().equals(transactionType));
-    }
-
     public static TransactionType fromString(String transactionType) {
         for (TransactionType type : TransactionType.values()) {
             if (type.getTransactionType().equals(transactionType)) {

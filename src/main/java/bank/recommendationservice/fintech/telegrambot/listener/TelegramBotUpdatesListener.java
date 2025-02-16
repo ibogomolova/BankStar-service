@@ -1,6 +1,7 @@
 package bank.recommendationservice.fintech.telegrambot.listener;
 
 import bank.recommendationservice.fintech.dto.RecommendationDTO;
+import bank.recommendationservice.fintech.exception.UserNotFoundException;
 import bank.recommendationservice.fintech.repository.RecommendationsRepository;
 import bank.recommendationservice.fintech.service.RecommendationService;
 import com.pengrad.telegrambot.TelegramBot;
@@ -75,19 +76,23 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
                     if (commandParts.length <= 1) {
                         SendMessage sendMessage = new SendMessage(chatId, "Пожалуйста, " +
                                 "укажите имя пользователя, через пробел, после команды /recommend.");
-
                         telegramBot.execute(sendMessage);
-                        return;
+                    } else {
+                        String userName = commandParts[1];
+                        if (userName != null && !userName.isEmpty()) {
+                            handleRecommendationRequest(chatId, userName);
+                        }
                     }
-                    handleRecommendationRequest(chatId, commandParts[1]);
+                } else {
+                    SendMessage sendMessage = new SendMessage(chatId, "Неизвестная команда");
+                    telegramBot.execute(sendMessage);
                 }
             }
         });
         return UpdatesListener.CONFIRMED_UPDATES_ALL;
     }
 
-
-        /**
+/**
          * Обрабатывает запрос на получение рекомендаций.
          * <p>
          * Метод проверяет, существует ли пользователь с указанным именем.
@@ -97,23 +102,30 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
          * @param chatId  ID чата, в котором был отправлен запрос
          * @param userName имя пользователя, для которого нужно получить рекомендации
          */
-    private void handleRecommendationRequest(long chatId, String userName) {
-        if (userName == null || userName.isEmpty()) {
-            throw new IllegalArgumentException("Имя пользователя не должно быть пустым");
-        }
-        boolean check = recommendationsRepository.validateUserName(userName);
-        if (!check) {
-            String answer = "Пользователь с именем " + userName + " не найден.";
-            SendMessage sendMessage = new SendMessage(chatId, answer);
+  
+    private void handleRecommendationRequest(long chatId, String username) {
+        try {
+            List<RecommendationDTO> response = recommendationService.getRecommendations(username);
+            String fullUserName = recommendationsRepository.getFullNameByUsername(username);
+            if (fullUserName == null) {
+                SendMessage sendMessage = new SendMessage(chatId, "Пользователь не найден");
+                telegramBot.execute(sendMessage);
+            }
+            String result = "Рекомендации для " + fullUserName + ":\n";
+            if (response.isEmpty()) {
+                result += "Не удалось подобрать рекомендации для этого пользователя";
+            } else {
+                for (RecommendationDTO recommendation : response) {
+                    result += recommendation.toString() + "\n";
+                }
+                SendMessage sendMessage = new SendMessage(chatId, result);
+                telegramBot.execute(sendMessage);
+            }
+        } catch (UserNotFoundException e) {
+            logger.error("Ошибка при обработке рекомендаций для пользователя {}: {}", username, e.getMessage(), e);
+            SendMessage sendMessage = new SendMessage(chatId, "Пользователь не найден");
             telegramBot.execute(sendMessage);
+
         }
-        List<RecommendationDTO> response = recommendationService.getRecommendations(userName);
-        String fullUserName = recommendationsRepository.getFullNameByUsername(userName);
-        String result = "Рекомендации для " + fullUserName + ":\n";
-        for (RecommendationDTO recommendation : response) {
-            result += recommendation.toString() + "\n";
-        }
-        SendMessage sendMessage = new SendMessage(chatId, result);
-        telegramBot.execute(sendMessage);
     }
 }
