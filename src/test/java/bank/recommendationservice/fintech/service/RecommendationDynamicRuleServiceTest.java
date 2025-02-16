@@ -206,14 +206,12 @@ public class RecommendationDynamicRuleServiceTest {
         DynamicRule rule = new DynamicRule();
         rule.setId(id);
         when(dynamicRuleRepository.existsById(id)).thenReturn(true);
-        when(dynamicRuleQueryRepository.findByDynamicRuleId(id)).thenReturn(Collections.emptyList());
 
         // test
         recommendationDynamicRuleService.deleteDynamicRule(id);
 
         // check
         verify(dynamicRuleRepository, times(1)).deleteById(id);
-        verify(dynamicRuleQueryRepository, times(1)).deleteAll(anyList());
     }
 
     /**

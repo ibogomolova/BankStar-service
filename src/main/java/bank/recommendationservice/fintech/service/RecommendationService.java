@@ -19,10 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class RecommendationService {
@@ -83,7 +80,7 @@ public class RecommendationService {
         return allRecommendations;
     }
 
-    public List<RecommendationDTO> getRecommendations(String userName) {
+        public List<RecommendationDTO> getRecommendations(String userName) {
         UUID userId = recommendationsRepository.getUserIdByUserName(userName);
         List<DynamicRule> dynamicRules = dynamicRuleRepository.findAll();
         List<RecommendationDTO> dynamicRecommendations = new ArrayList<>();
@@ -107,7 +104,6 @@ public class RecommendationService {
 
         return allRecommendations;
     }
-
 
     /**
      * Оценивает динамические правила для заданного пользователя.
