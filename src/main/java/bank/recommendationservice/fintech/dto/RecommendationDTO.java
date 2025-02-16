@@ -37,6 +37,12 @@ public class RecommendationDTO {
         this.text = text;
     }
 
+    public RecommendationDTO(String product1, String description1) {
+        this.id = UUID.randomUUID();
+        this.name = product1;
+        this.text = description1;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

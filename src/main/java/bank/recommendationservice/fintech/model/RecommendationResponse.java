@@ -5,12 +5,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
-
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+
 /**
- *  Модель ответа для получения рекомендаций
+ * Модель ответа для получения рекомендаций
  */
 @Getter
 @Setter
@@ -20,6 +20,9 @@ public class RecommendationResponse {
     private UUID user_id;
     @Schema(description = "Список рекомендаций для пользователя")
     private List<RecommendationDTO> recommendations;
+
+    public RecommendationResponse() {
+    }
 
     public RecommendationResponse(UUID user_id, List<RecommendationDTO> recommendations) {
         this.user_id = user_id;

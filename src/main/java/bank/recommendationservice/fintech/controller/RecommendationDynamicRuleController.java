@@ -1,5 +1,6 @@
 package bank.recommendationservice.fintech.controller;
 
+import bank.recommendationservice.fintech.exception.RulesNotFoundException;
 import bank.recommendationservice.fintech.model.DynamicRule;
 import bank.recommendationservice.fintech.model.RuleStatsResponse;
 import bank.recommendationservice.fintech.service.RecommendationDynamicRuleService;
@@ -11,6 +12,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -52,8 +54,13 @@ public class RecommendationDynamicRuleController {
                     content = @Content(schema = @Schema(implementation = DynamicRule.class)))
     })
     public ResponseEntity<DynamicRule> createRule(@RequestBody DynamicRule rule) {
+        if (rule.getProductName() == null) {
+            return ResponseEntity.badRequest().build();
+        }
         DynamicRule savedRule = recommendationDynamicRuleService.addRule(rule);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedRule);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(savedRule);
     }
 
     /**
@@ -73,8 +80,12 @@ public class RecommendationDynamicRuleController {
             @ApiResponse(responseCode = "204", description = "Правило успешно удалено")
     })
     public ResponseEntity<Void> deleteRule(@PathVariable Long id) {
-        recommendationDynamicRuleService.deleteDynamicRule(id);
-        return ResponseEntity.noContent().build();
+        try {
+            recommendationDynamicRuleService.deleteDynamicRule(id);
+            return ResponseEntity.noContent().build();
+        } catch (RulesNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     /**
@@ -101,8 +112,12 @@ public class RecommendationDynamicRuleController {
     @GetMapping("/stats")
     @Operation(summary = "Получение статистики срабатывания динамических правил", description = "Возвращает счетчик срабатывания динамических правил")
     public ResponseEntity<RuleStatsResponse> getRuleStats() {
-        RuleStatsResponse response = ruleStatsService.getAllRuleStats();
-        return ResponseEntity.ok(response);
+        try {
+            RuleStatsResponse response = ruleStatsService.getAllRuleStats();
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 
 }

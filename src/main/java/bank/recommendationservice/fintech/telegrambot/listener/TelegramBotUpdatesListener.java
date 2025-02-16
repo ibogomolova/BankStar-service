@@ -92,6 +92,17 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
         return UpdatesListener.CONFIRMED_UPDATES_ALL;
     }
 
+/**
+         * Обрабатывает запрос на получение рекомендаций.
+         * <p>
+         * Метод проверяет, существует ли пользователь с указанным именем.
+         * Если пользователь не существует, бот отправляет сообщение об ошибке.
+         * Если пользователь существует, бот отправляет список рекомендаций для него.
+         *
+         * @param chatId  ID чата, в котором был отправлен запрос
+         * @param userName имя пользователя, для которого нужно получить рекомендации
+         */
+  
     private void handleRecommendationRequest(long chatId, String username) {
         try {
             List<RecommendationDTO> response = recommendationService.getRecommendations(username);
@@ -114,6 +125,7 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
             logger.error("Ошибка при обработке рекомендаций для пользователя {}: {}", username, e.getMessage(), e);
             SendMessage sendMessage = new SendMessage(chatId, "Пользователь не найден");
             telegramBot.execute(sendMessage);
+
         }
     }
 }

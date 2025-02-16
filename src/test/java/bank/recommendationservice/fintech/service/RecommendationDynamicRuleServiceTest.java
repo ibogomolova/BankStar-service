@@ -84,9 +84,9 @@ public class RecommendationDynamicRuleServiceTest {
         queries.add(query);
         dynamicRule.setQueries(queries);
         when(dynamicRuleRepository.save(any(DynamicRule.class))).thenReturn(dynamicRule);
-        // check
-        DynamicRule result = recommendationDynamicRuleService.addRule(dynamicRule);
         // test
+        DynamicRule result = recommendationDynamicRuleService.addRule(dynamicRule);
+        // check
         assertEquals(dynamicRule, result);
         verify(dynamicRuleRepository, times(1)).save(dynamicRule);
         assertEquals(dynamicRule, query.getDynamicRule());
@@ -115,9 +115,9 @@ public class RecommendationDynamicRuleServiceTest {
         queries.add(query);
         dynamicRule.setQueries(queries);
         when(dynamicRuleRepository.save(any(DynamicRule.class))).thenReturn(dynamicRule);
-        // check
-        DynamicRule result = recommendationDynamicRuleService.addRule(dynamicRule);
         // test
+        DynamicRule result = recommendationDynamicRuleService.addRule(dynamicRule);
+        // check
         assertEquals(dynamicRule, result);
         verify(dynamicRuleRepository, times(1)).save(dynamicRule);
         assertEquals(dynamicRule, query.getDynamicRule());
@@ -152,9 +152,9 @@ public class RecommendationDynamicRuleServiceTest {
         // data
         dynamicRule.setQueries(null);
         when(dynamicRuleRepository.save(any(DynamicRule.class))).thenReturn(dynamicRule);
-        // check
-        DynamicRule result = recommendationDynamicRuleService.addRule(dynamicRule);
         // test
+        DynamicRule result = recommendationDynamicRuleService.addRule(dynamicRule);
+        // check
         assertEquals(dynamicRule, result);
         verify(dynamicRuleRepository, times(1)).save(dynamicRule);
     }
@@ -178,9 +178,9 @@ public class RecommendationDynamicRuleServiceTest {
         queries.add(query);
         dynamicRule.setQueries(queries);
         when(dynamicRuleRepository.save(any(DynamicRule.class))).thenReturn(dynamicRule);
-        // check
-        DynamicRule result = recommendationDynamicRuleService.addRule(dynamicRule);
         // test
+        DynamicRule result = recommendationDynamicRuleService.addRule(dynamicRule);
+        // check
         assertEquals(dynamicRule, result);
         verify(dynamicRuleRepository, times(1)).save(dynamicRule);
         assertEquals(dynamicRule, query.getDynamicRule());
@@ -208,10 +208,10 @@ public class RecommendationDynamicRuleServiceTest {
         when(dynamicRuleRepository.existsById(id)).thenReturn(true);
         when(dynamicRuleQueryRepository.findByDynamicRuleId(id)).thenReturn(Collections.emptyList());
 
-        // check
+        // test
         recommendationDynamicRuleService.deleteDynamicRule(id);
 
-        // test
+        // check
         verify(dynamicRuleRepository, times(1)).deleteById(id);
         verify(dynamicRuleQueryRepository, times(1)).deleteAll(anyList());
     }
@@ -277,10 +277,10 @@ public class RecommendationDynamicRuleServiceTest {
         rules.add(new DynamicRule());
         when(dynamicRuleRepository.findAll()).thenReturn(rules);
 
-        // check
+        // test
         List<DynamicRule> result = recommendationDynamicRuleService.getAllDynamicRules();
 
-        // test
+        // check
         assertEquals(rules, result);
     }
 
@@ -300,10 +300,10 @@ public class RecommendationDynamicRuleServiceTest {
         List<DynamicRule> rules = new ArrayList<>();
         when(dynamicRuleRepository.findAll()).thenReturn(rules);
 
-        // check
+        // test
         List<DynamicRule> result = recommendationDynamicRuleService.getAllDynamicRules();
 
-        // test
+        // check
         assertTrue(result.isEmpty());
     }
 
@@ -321,10 +321,10 @@ public class RecommendationDynamicRuleServiceTest {
         // data
         when(dynamicRuleRepository.findAll()).thenReturn(Collections.emptyList());
 
-        // check
+        // test
         List<DynamicRule> result = recommendationDynamicRuleService.getAllDynamicRules();
 
-        // test
+        // check
         assertTrue(result.isEmpty());
     }
 }
