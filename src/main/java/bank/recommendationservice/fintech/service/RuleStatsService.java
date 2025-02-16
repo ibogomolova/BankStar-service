@@ -52,11 +52,17 @@ public class RuleStatsService {
      * @return {@code List} из DTO всех объектов RuleStats
      */
     public RuleStatsResponse getAllRuleStats() {
-        List<RuleStatsDTO> ruleStatsList = ruleStatsRepository.findAll().stream()
-                .map(ruleStats -> new RuleStatsDTO(ruleStats.getDynamicRule().getId(), ruleStats.getCount()))
-                .toList();
-        return new RuleStatsResponse(ruleStatsList);
+        try {
+            List<RuleStatsDTO> ruleStatsList = ruleStatsRepository.findAll().stream()
+                    .map(ruleStats -> new RuleStatsDTO(ruleStats.getDynamicRule().getId(), ruleStats.getCount()))
+                    .toList();
+            return new RuleStatsResponse(ruleStatsList);
+        } catch (Exception e) {
+            logger.error("Ошибка при получении статистики правил: {}", e.getMessage());
+            throw new RuntimeException("Ошибка при получении статистики правил", e);
+        }
     }
+
 
     /**
      * Увеличивает счетчик срабатываний динамического правила

@@ -9,6 +9,8 @@ import com.github.benmanes.caffeine.cache.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -90,7 +92,6 @@ public class RecommendationsRepository {
             return total != null ? total : 0;
         });
     }
-
 
     /**
      * Возвращает сумму всех трат (withdraw) по продукту типа productType у пользователя с id userId
@@ -174,7 +175,6 @@ public class RecommendationsRepository {
         };
     }
 
-
     /**
      * Сравнивает сумму всех транзакций типа DEPOSIT с суммой всех транзакций типа WITHDRAW по продукту X.
      *
@@ -202,17 +202,54 @@ public class RecommendationsRepository {
         };
     }
 
+
+    /**
+     * Возвращает ID пользователя по имени пользователя.
+     *
+     * @param userName имя пользователя
+     * @return ID пользователя
+     * @throws NullPointerException если {@code userName} - {@code null}
+     */
     public UUID getUserIdByUserName(String userName) {
         String sql = "SELECT id FROM users WHERE username = ?";
         return jdbcTemplate.queryForObject(sql, new Object[]{userName}, UUID.class);
     }
 
+
+    /**
+     * Возвращает полное имя пользователя по его имени пользователя.
+     *
+     * @param username имя пользователя
+     * @return полное имя пользователя
+     */
     public String getFullNameByUsername(String username) {
         String sql = "SELECT first_name, last_name FROM users WHERE username = ?";
-        return jdbcTemplate.queryForObject(sql, new Object[]{username}, (rs, rowNum) -> {
-            String firstName = rs.getString("first_name");
-            String lastName = rs.getString("last_name");
-            return firstName + " " + lastName;
-        });
+        try {
+            return jdbcTemplate.queryForObject(sql, new Object[]{username}, (rs, rowNum) -> {
+                String firstName = rs.getString("first_name");
+                String lastName = rs.getString("last_name");
+                return firstName + " " + lastName;
+            });
+        } catch (EmptyResultDataAccessException e) {
+            logger.error("Пользователь {} не найден", username);
+            return null;
+        } catch (IncorrectResultSizeDataAccessException e) {
+            logger.error("Найдено несколько пользователей с юзернеймом {}", username);
+            return null;
+        }
+    }
+
+
+    /**
+     * Проверяет, существует ли пользователь с указанным именем.
+     *
+     * @param userName имя пользователя
+     * @return true, если пользователь существует, false - в противном случае
+     */
+    public boolean validateUserName(String userName) {
+        String sql = "SELECT COUNT(*) FROM users WHERE username = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, new Object[]{userName}, Integer.class);
+
+        return count != null && count > 0;
     }
 }

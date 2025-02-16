@@ -1,5 +1,6 @@
 package bank.recommendationservice.fintech.controller;
 
+import bank.recommendationservice.fintech.exception.RulesNotFoundException;
 import bank.recommendationservice.fintech.model.DynamicRule;
 import bank.recommendationservice.fintech.model.RuleStatsResponse;
 import bank.recommendationservice.fintech.service.RecommendationDynamicRuleService;
@@ -7,21 +8,19 @@ import bank.recommendationservice.fintech.service.RuleStatsService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -32,14 +31,11 @@ public class RecommendationDynamicRuleControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Mock
+    @MockBean
     private RecommendationDynamicRuleService recommendationDynamicRuleService;
 
-    @Mock
+    @MockBean
     private RuleStatsService ruleStatsService;
-
-    @InjectMocks
-    private RecommendationDynamicRuleController recommendationDynamicRuleController;
 
     private ObjectMapper objectMapper;
 
@@ -47,28 +43,24 @@ public class RecommendationDynamicRuleControllerTest {
     @BeforeEach
     public void setUp() {
         objectMapper = new ObjectMapper();
-        MockitoAnnotations.openMocks(this);
-        System.out.println("recommendationDynamicRuleService: " + recommendationDynamicRuleService);
-        mockMvc = MockMvcBuilders.standaloneSetup(recommendationDynamicRuleController).build();
-
     }
 
-
     @Test
-    public void testCreateDynamicRule_Success2() throws Exception {
-        DynamicRule dynamicRule = new DynamicRule();
-        dynamicRule.setProductName("Test Product");
-        dynamicRule.setProductText("Test description");
-        // Настройте ваш объект dynamicRule
+    public void testCreateDynamicRule_Success() throws Exception {
+        DynamicRule rule = new DynamicRule();
+        rule.setId(1L);
+        rule.setProductName("Test Product");
+        rule.setProductText("Test description");
 
-        when(recommendationDynamicRuleService.addRule(any(DynamicRule.class))).thenReturn(dynamicRule);
+
+        when(recommendationDynamicRuleService.addRule(any(DynamicRule.class))).thenReturn(rule);
 
         mockMvc.perform(post("/rule")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dynamicRule)))
-                .andExpect(status().isOk());
-
-        verify(recommendationDynamicRuleService, times(1)).addRule(any(DynamicRule.class));
+                        .content(objectMapper.writeValueAsString(rule)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.productName").value("Test Product"));
     }
 
     @Test
@@ -112,12 +104,14 @@ public class RecommendationDynamicRuleControllerTest {
 
     @Test
     public void testDeleteRuleNotFound() throws Exception {
-        // data
+        //data
         Long id = 1L;
 
-        // test & check
-        doThrow(new RuntimeException("Rule not found")).when(recommendationDynamicRuleService).deleteDynamicRule(id);
+        //test
+        doThrow(new RulesNotFoundException("Не удалось удалить правило - правило не найдено", id))
+                .when(recommendationDynamicRuleService).deleteDynamicRule(id);
 
+        // check
         mockMvc.perform(delete("/rule/{id}", id))
                 .andExpect(status().isNotFound());
     }
@@ -182,23 +176,5 @@ public class RecommendationDynamicRuleControllerTest {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @Test
-    public void testCreateDynamicRule_Success() throws Exception {
-        DynamicRule rule = new DynamicRule();
-        rule.setId(1L);
-        rule.setProductName("Test Product");
-        rule.setProductText("Test description");
-
-
-        when(recommendationDynamicRuleService.addRule(any(DynamicRule.class))).thenReturn(rule);
-
-        mockMvc.perform(post("/rule")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(rule)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.productName").value("Test Product"));
     }
 }

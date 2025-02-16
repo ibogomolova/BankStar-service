@@ -1,4 +1,4 @@
-package bank.recommendationservice.fintech.other;
+package bank.recommendationservice.fintech.other.text;
 
 public class RuleSetText {
     public final static String INVEST_500_TEXT = "Откройте свой путь к успеху с индивидуальным инвестиционным счетом (ИИС) от нашего банка! " +
