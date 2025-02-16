@@ -17,10 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class RecommendationService {
@@ -81,6 +78,8 @@ public class RecommendationService {
         return allRecommendations;
     }
 
+
+
     public List<RecommendationDTO> getRecommendations(String userName) {
         try {
             UUID userId = recommendationsRepository.getUserIdByUserName(userName);
@@ -91,6 +90,7 @@ public class RecommendationService {
                 if (evaluateDynamicRules(rule, userId)) {
                     dynamicRecommendations.add(new RecommendationDTO(rule.getProductId(), rule.getProductName(), rule.getProductText()));
                 }
+
             }
 
             List<RecommendationDTO> standardRecommendations = ruleSets.stream()
@@ -108,7 +108,6 @@ public class RecommendationService {
             throw new UserNotFoundException("Пользователь не найден");
         }
     }
-
 
     /**
      * Оценивает динамические правила для заданного пользователя.
