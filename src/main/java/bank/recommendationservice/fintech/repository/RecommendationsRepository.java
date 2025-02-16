@@ -9,6 +9,8 @@ import com.github.benmanes.caffeine.cache.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -222,11 +224,19 @@ public class RecommendationsRepository {
      */
     public String getFullNameByUsername(String username) {
         String sql = "SELECT first_name, last_name FROM users WHERE username = ?";
-        return jdbcTemplate.queryForObject(sql, new Object[]{username}, (rs, rowNum) -> {
-            String firstName = rs.getString("first_name");
-            String lastName = rs.getString("last_name");
-            return firstName + " " + lastName;
-        });
+        try {
+            return jdbcTemplate.queryForObject(sql, new Object[]{username}, (rs, rowNum) -> {
+                String firstName = rs.getString("first_name");
+                String lastName = rs.getString("last_name");
+                return firstName + " " + lastName;
+            });
+        } catch (EmptyResultDataAccessException e) {
+            logger.error("Пользователь {} не найден", username);
+            return null;
+        } catch (IncorrectResultSizeDataAccessException e) {
+            logger.error("Найдено несколько пользователей с юзернеймом {}", username);
+            return null;
+        }
     }
 
 
