@@ -31,7 +31,9 @@ public class DynamicRuleQuery {
 
     @ElementCollection
     @CollectionTable(name = "query_arguments", joinColumns = @JoinColumn(name = "dynamic_rule_query_id"))
-    @Schema(description = "Список аргументов для запроса", example = "[\"1000\"]")
+
+    @Schema(description = "Список аргументов для запроса", example = "[\"CREDIT\"]")
+
     private List<String> arguments;
 
     @Column(name = "negate", nullable = false)
@@ -51,7 +53,10 @@ public class DynamicRuleQuery {
         if (this == object) return true;
         if (object == null || getClass() != object.getClass()) return false;
         DynamicRuleQuery that = (DynamicRuleQuery) object;
-        return negate == that.negate && Objects.equals(id, that.id) && Objects.equals(query, that.query) && Objects.equals(arguments, that.arguments);
+        return negate == that.negate
+                && Objects.equals(id, that.id)
+                && Objects.equals(query, that.query)
+                && Objects.equals(arguments, that.arguments);
     }
 
     @Override

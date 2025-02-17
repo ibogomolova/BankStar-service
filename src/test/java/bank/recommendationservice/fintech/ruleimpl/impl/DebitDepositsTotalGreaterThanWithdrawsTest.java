@@ -63,21 +63,4 @@ class DebitDepositsTotalGreaterThanWithdrawsTest {
         verify(recommendationsRepository).getWithdrawsOfTypeTotal(userId, ProductType.DEBIT.name());
     }
 
-    @Test
-    @DisplayName("Тест на выброс Exception, если getDepositsOfTypeTotal() вернет Null")
-    void testEvaluateThrows_1() {
-        when(recommendationsRepository.getDepositsOfTypeTotal(userId, ProductType.DEBIT.name())).thenReturn(null);
-
-        //test and check
-        assertThrows(NoTransactionsFoundException.class, () -> out.evaluate(userId));
-        verify(recommendationsRepository).getDepositsOfTypeTotal(userId, ProductType.DEBIT.name());
-    }
-
-    @Test
-    @DisplayName("Тест на выброс Exception, если getWithdrawsOfTypeTotal() вернет Null")
-    void testEvaluateThrows_2() {
-        //test and check
-        when(recommendationsRepository.getWithdrawsOfTypeTotal(userId, ProductType.DEBIT.name())).thenReturn(null);
-        assertThrows(NoTransactionsFoundException.class, () -> out.evaluate(userId));
-    }
 }

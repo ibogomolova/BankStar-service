@@ -3,7 +3,7 @@ package bank.recommendationservice.fintech.rulesetimpl;
 import bank.recommendationservice.fintech.dto.RecommendationDTO;
 import bank.recommendationservice.fintech.exception.NullArgumentException;
 import bank.recommendationservice.fintech.interfaces.RecommendationRuleSet;
-import bank.recommendationservice.fintech.other.RuleSetText;
+import bank.recommendationservice.fintech.other.text.RuleSetText;
 import bank.recommendationservice.fintech.ruleimpl.DebitDepositsTotalGreaterThanWithdraws;
 import bank.recommendationservice.fintech.ruleimpl.DebitOrSavingDepositsTotalGreaterThanOrEqualsTo50_000;
 import bank.recommendationservice.fintech.ruleimpl.UsesAtLeastOneDebitProduct;
@@ -64,6 +64,7 @@ public class TopSaving implements RecommendationRuleSet {
         boolean hasDebitProduct = usesAtLeastOneDebitProduct.evaluate(userId);
         boolean depositsGreaterThanOrEqualsTo50k = debitOrSavingDepositsTotalGreaterThanOrEqualsTo50_000.evaluate(userId);
         boolean depositsGreaterThanWithdrawals = debitDepositsTotalGreaterThanWithdraws.evaluate(userId);
+
 
         if (hasDebitProduct && depositsGreaterThanOrEqualsTo50k && depositsGreaterThanWithdrawals) {
             logger.info("Пользователь с ID {}: подходит под рекомендацию. Все условия выполнены", userId);

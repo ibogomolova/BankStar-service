@@ -2,8 +2,7 @@ package bank.recommendationservice.fintech.service;
 
 
 import bank.recommendationservice.fintech.dto.RecommendationDTO;
-import bank.recommendationservice.fintech.exception.NullArgumentException;
-import bank.recommendationservice.fintech.exception.UnknownQueryTypeException;
+import bank.recommendationservice.fintech.exception.*;
 import bank.recommendationservice.fintech.interfaces.RecommendationRuleSet;
 import bank.recommendationservice.fintech.model.DynamicRule;
 import bank.recommendationservice.fintech.model.DynamicRuleQuery;
@@ -15,12 +14,10 @@ import bank.recommendationservice.fintech.repository.DynamicRuleRepository;
 import bank.recommendationservice.fintech.repository.RecommendationsRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class RecommendationService {
@@ -82,32 +79,33 @@ public class RecommendationService {
     }
 
     public List<RecommendationDTO> getRecommendations(String userName) {
-        UUID userId = recommendationsRepository.getUserIdByUserName(userName);
-        List<DynamicRule> dynamicRules = dynamicRuleRepository.findAll();
-        List<RecommendationDTO> dynamicRecommendations = new ArrayList<>();
+        try {
+            UUID userId = recommendationsRepository.getUserIdByUserName(userName);
+            List<DynamicRule> dynamicRules = dynamicRuleRepository.findAll();
+            List<RecommendationDTO> dynamicRecommendations = new ArrayList<>();
 
-        for (DynamicRule rule : dynamicRules) {
+            for (DynamicRule rule : dynamicRules) {
+                if (evaluateDynamicRules(rule, userId)) {
+                    dynamicRecommendations.add(new RecommendationDTO(rule.getProductId(), rule.getProductName(), rule.getProductText()));
+                }
 
-            if (evaluateDynamicRules(rule, userId)) {
-
-                dynamicRecommendations.add(new RecommendationDTO(rule.getProductId(), rule.getProductName(), rule.getProductText()));
             }
+
+            List<RecommendationDTO> standardRecommendations = ruleSets.stream()
+                    .map(p -> p.recommend(userId))
+                    .filter(Objects::nonNull)
+                    .toList();
+
+            List<RecommendationDTO> allRecommendations = new ArrayList<>();
+            allRecommendations.addAll(dynamicRecommendations);
+            allRecommendations.addAll(standardRecommendations);
+
+            return allRecommendations;
+        } catch (EmptyResultDataAccessException e) {
+            logger.error("Пользователь {} не найден", userName);
+            throw new UserNotFoundException("Пользователь не найден");
         }
-
-        List<RecommendationDTO> standardRecommendations = ruleSets.stream()
-                .map(p -> p.recommend(userId))
-                .filter(Objects::nonNull)
-                .toList();
-
-        List<RecommendationDTO> allRecommendations = new ArrayList<>();
-        allRecommendations.addAll(dynamicRecommendations);
-        allRecommendations.addAll(standardRecommendations);
-
-        return allRecommendations;
     }
-
-
-
 
     /**
      * Оценивает динамические правила для заданного пользователя.
@@ -130,22 +128,38 @@ public class RecommendationService {
         for (DynamicRuleQuery query : queries) {
             try {
                 QueryType queryType = QueryType.fromString(query.getQuery());
+                if (!QueryType.isValidQuery(queryType.getQueryType())) {
+                    logger.warn("Неизвестный тип запроса query: {}", query.getQuery());
+                    throw new UnknownQueryTypeException("Неизвестный тип запроса query: " + queryType);
+                }
                 List<String> queryArguments = query.getArguments();
                 return switch (queryType) {
                     case USER_OF -> processUserOfQuery(userId, queryArguments.get(0));
-                    case ACTIVE_USER_OF -> processActiveUserOfQuery(ProductType.valueOf(queryArguments.get(0)), userId);
+                    case ACTIVE_USER_OF ->
+                            processActiveUserOfQuery(ProductType.fromString(queryArguments.get(0)), userId);
                     case TRANSACTION_SUM_COMPARE ->
-                            processTransactionSumCompare(ProductType.valueOf(queryArguments.get(0)),
-                                    TransactionType.valueOf(queryArguments.get(1)), userId, ComparisonType.valueOf(queryArguments.get(2)), Integer.parseInt(queryArguments.get(3)));
+                            processTransactionSumCompare(ProductType.fromString(queryArguments.get(0)),
+                                    TransactionType.fromString(queryArguments.get(1)), userId, ComparisonType.fromString(queryArguments.get(2)), Integer.parseInt(queryArguments.get(3)));
 
                     case TRANSACTION_SUM_COMPARE_DEPOSIT_WITHDRAW ->
-                            processTransactionSumCompareDepositWithdraw(ProductType.valueOf(queryArguments.get(0)),
-                                    userId, ComparisonType.valueOf(queryArguments.get(1)));
-
+                            processTransactionSumCompareDepositWithdraw(ProductType.fromString(queryArguments.get(0)),
+                                    userId, ComparisonType.fromString(queryArguments.get(1)));
                 };
 
             } catch (UnknownQueryTypeException e) {
-                logger.warn("Неизвестный тип запроса query: {}", query.getQuery());
+                logger.error("Не удалось обработать запрос: {}", e.getMessage(), e);
+                return false;
+            } catch (UnknownComparisonTypeException e) {
+                logger.error("Не удалось обработать сравнение: {}", e.getMessage(), e);
+                return false;
+            } catch (UnknownProductTypeException e) {
+                logger.error("Не удалось обработать тип продукта: {}", e.getMessage(), e);
+                return false;
+            } catch (UnknownTransactionTypeException e) {
+                logger.error("Не удалось обработать тип транзакции: {}", e.getMessage(), e);
+                return false;
+            } catch (NumberFormatException e) {
+                logger.error("Не удалось обработать число для сравнения: {}", e.getMessage(), e);
                 return false;
             }
         }

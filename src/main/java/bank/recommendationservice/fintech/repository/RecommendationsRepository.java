@@ -1,6 +1,7 @@
 package bank.recommendationservice.fintech.repository;
 
 import bank.recommendationservice.fintech.exception.NullArgumentException;
+import bank.recommendationservice.fintech.exception.UnknownComparisonTypeException;
 import bank.recommendationservice.fintech.other.ComparisonType;
 import bank.recommendationservice.fintech.other.ProductType;
 import bank.recommendationservice.fintech.other.TransactionType;
@@ -8,6 +9,8 @@ import com.github.benmanes.caffeine.cache.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -86,7 +89,7 @@ public class RecommendationsRepository {
                     userId,
                     productType);
 
-            return total != null ? total.intValue() : 0;
+            return total != null ? total : 0;
         });
     }
 
@@ -156,7 +159,7 @@ public class RecommendationsRepository {
      * @throws IllegalArgumentException если передан недопустимый тип сравнения
      */
     public boolean compareTransactionSum(ProductType productType, TransactionType transactionType, UUID userId, ComparisonType comparisonType, int constant) {
-        String query = "SELECT SUM(amount) FROM transactions WHERE product_type = ? AND transaction_type = ? AND user_id = ?";
+        String query = "SELECT SUM(amount) FROM transactions t JOIN products p on t.PRODUCT_ID = p.ID WHERE p.TYPE = ? AND transaction_type = ? AND t.user_id = ?";
         Object[] params = new Object[]{productType.name(), transactionType.name(), userId};
         Integer sum = jdbcTemplate.queryForObject(query, Integer.class, params);
         if (sum == null) {
@@ -168,7 +171,7 @@ public class RecommendationsRepository {
             case EQUALS -> sum.equals(constant);
             case GREATER_THAN_OR_EQUALS -> sum >= constant;
             case LESS_THAN_OR_EQUALS -> sum <= constant;
-            default -> throw new IllegalArgumentException("Недопустимый тип сравнения: " + comparisonType);
+            default -> throw new IllegalArgumentException("Неизвестный тип сравнения: " + comparisonType);
         };
     }
 
@@ -181,8 +184,8 @@ public class RecommendationsRepository {
      */
 
     public boolean compareDepositWithdrawSum(ProductType productType, UUID userId, ComparisonType comparisonType) {
-        String depositQuery = "SELECT SUM(amount) FROM transactions WHERE product_type = ? AND transaction_type = 'DEPOSIT' AND user_id = ?";
-        String withdrawQuery = "SELECT SUM(amount) FROM transactions WHERE product_type = ? AND transaction_type = 'WITHDRAW' AND user_id = ?";
+        String depositQuery = "SELECT SUM(amount) FROM transactions t JOIN products p on t.PRODUCT_ID = p.ID WHERE p.TYPE = ? AND t.TYPE = 'DEPOSIT' AND t.user_id = ?";
+        String withdrawQuery = "SELECT SUM(amount) FROM transactions t JOIN products p on t.PRODUCT_ID = p.ID WHERE p.TYPE = ? AND t.TYPE = 'WITHDRAW' AND t.user_id = ?";
         Object[] params = new Object[]{productType.name(), userId};
         Integer depositSum = jdbcTemplate.queryForObject(depositQuery, Integer.class, params);
         Integer withdrawSum = jdbcTemplate.queryForObject(withdrawQuery, Integer.class, params);
@@ -195,7 +198,7 @@ public class RecommendationsRepository {
             case EQUALS -> depositSum.equals(withdrawSum);
             case GREATER_THAN_OR_EQUALS -> depositSum >= withdrawSum;
             case LESS_THAN_OR_EQUALS -> depositSum <= withdrawSum;
-            default -> throw new IllegalArgumentException("Unknown comparison type: " + comparisonType);
+            default -> throw new UnknownComparisonTypeException("Неизвестный тип сравнения: " + comparisonType);
         };
     }
 
@@ -221,11 +224,19 @@ public class RecommendationsRepository {
      */
     public String getFullNameByUsername(String username) {
         String sql = "SELECT first_name, last_name FROM users WHERE username = ?";
-        return jdbcTemplate.queryForObject(sql, new Object[]{username}, (rs, rowNum) -> {
-            String firstName = rs.getString("first_name");
-            String lastName = rs.getString("last_name");
-            return firstName + " " + lastName;
-        });
+        try {
+            return jdbcTemplate.queryForObject(sql, new Object[]{username}, (rs, rowNum) -> {
+                String firstName = rs.getString("first_name");
+                String lastName = rs.getString("last_name");
+                return firstName + " " + lastName;
+            });
+        } catch (EmptyResultDataAccessException e) {
+            logger.error("Пользователь {} не найден", username);
+            return null;
+        } catch (IncorrectResultSizeDataAccessException e) {
+            logger.error("Найдено несколько пользователей с юзернеймом {}", username);
+            return null;
+        }
     }
 
 
@@ -242,4 +253,3 @@ public class RecommendationsRepository {
         return count != null && count > 0;
     }
 }
-

@@ -20,17 +20,16 @@ public enum ComparisonType {
 
     ComparisonType(String comparisonType) {
         this.comparisonType = comparisonType;
-
     }
 
-    public static ComparisonType fromString(String comparisonType) {
-        for (ComparisonType type : ComparisonType.values()) {
-            if (type.getComparisonType().equals(comparisonType)) {
-                return type;
-            }
-        }
-        throw new UnknownComparisonTypeException("Неизвестный тип сравнения: " + comparisonType);
+    public static ComparisonType fromString(String symbol) {
+        return switch (symbol) {
+            case ">" -> GREATER_THAN;
+            case "<" -> LESS_THAN;
+            case "=" -> EQUALS;
+            case ">=" -> GREATER_THAN_OR_EQUALS;
+            case "<=" -> LESS_THAN_OR_EQUALS;
+            default -> throw new UnknownComparisonTypeException("Неизвестный тип сравнения: " + symbol);
+        };
     }
 }
-
-

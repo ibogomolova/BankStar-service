@@ -29,7 +29,7 @@ import java.util.Properties;
 @PropertySource("classpath:tg_token.properties")
 public class TelegramBotConfiguration {
 
-  /**
+    /**
      * Токен Telegram-бота.
      */
     @Value("${bot.token}")
@@ -37,7 +37,7 @@ public class TelegramBotConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(TelegramBotConfiguration.class);
 
-      /**
+    /**
      * Конструктор для инициализации конфигурации Telegram-бота.
      * <p>
      * Загрузка токена бота из файла конфигурации {@code tg_token.properties}.
