@@ -30,7 +30,6 @@ class RecommendationsRepositoryTest {
 
     private final UUID userId = UUID.randomUUID();
     private final String productType = "testProductType";
-    private final ProductType enumProductType = ProductType.valueOf("DEBIT");
 
     @BeforeEach
     public void setUp() {
