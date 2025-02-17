@@ -101,7 +101,7 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
         if (userName == null || userName.isEmpty()) {
             throw new IllegalArgumentException("Имя пользователя не должно быть пустым");
         }
-        boolean check = recommendationsRepository.validateUserName(userName);
+        boolean check = recommendationsRepository.validateUserNameInDataBase(userName);
         if (!check) {
             String answer = "Пользователь с именем " + userName + " не найден.";
             SendMessage sendMessage = new SendMessage(chatId, answer);
