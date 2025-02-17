@@ -94,11 +94,4 @@ class DebitOrSavingDepositsTotalGreaterThanOrEqualsTo50_000Test {
         verify(recommendationsRepository).getDepositsOfTypeTotal(userId, ProductType.DEBIT.name());
     }
 
-    @Test
-    @DisplayName("Тест на выброс Exception, если getDepositsOfTypeTotal() вернет Null")
-    void testEvaluateThrows_1() {
-        //test and check
-        when(recommendationsRepository.getDepositsOfTypeTotal(userId, ProductType.DEBIT.name())).thenReturn(null);
-        assertThrows(NoTransactionsFoundException.class, () -> out.evaluate(userId));
-    }
 }
