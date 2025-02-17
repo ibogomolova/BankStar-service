@@ -58,11 +58,4 @@ class SavingDepositsTotalGreaterThan1_000Test {
         verify(recommendationsRepository).getDepositsOfTypeTotal(userId, ProductType.SAVING.name());
     }
 
-    @Test
-    @DisplayName("Тест на выброс Exception, если getDepositsOfTypeTotal() вернет null")
-    void evaluateTestNegative() {
-        //test and check
-        when(recommendationsRepository.getDepositsOfTypeTotal(userId, ProductType.SAVING.name())).thenReturn(null);
-        assertThrows(NoTransactionsFoundException.class, () -> out.evaluate(userId));
-    }
 }

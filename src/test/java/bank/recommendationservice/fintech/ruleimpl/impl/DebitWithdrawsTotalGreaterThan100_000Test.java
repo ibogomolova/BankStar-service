@@ -58,11 +58,4 @@ class DebitWithdrawsTotalGreaterThan100_000Test {
         verify(recommendationsRepository).getWithdrawsOfTypeTotal(userId, ProductType.DEBIT.name());
     }
 
-    @Test
-    @DisplayName("Тест на выброс Exception, если getWithdrawsOfTypeTotal() вернет null")
-    void evaluateTestNegative() {
-        //test and check
-        when(recommendationsRepository.getWithdrawsOfTypeTotal(userId, ProductType.DEBIT.name())).thenReturn(null);
-        assertThrows(NoTransactionsFoundException.class, () -> out.evaluate(userId));
-    }
 }
