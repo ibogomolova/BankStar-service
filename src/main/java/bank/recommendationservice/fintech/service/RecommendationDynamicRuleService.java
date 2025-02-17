@@ -7,7 +7,6 @@ import bank.recommendationservice.fintech.other.ComparisonType;
 import bank.recommendationservice.fintech.other.ProductType;
 import bank.recommendationservice.fintech.other.QueryType;
 import bank.recommendationservice.fintech.other.TransactionType;
-import bank.recommendationservice.fintech.repository.DynamicRuleQueryRepository;
 import bank.recommendationservice.fintech.repository.DynamicRuleRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -15,7 +14,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.validation.Valid;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -24,16 +22,13 @@ import java.util.List;
 @Slf4j
 public class RecommendationDynamicRuleService {
     private final DynamicRuleRepository dynamicRuleRepository;
-    private final DynamicRuleQueryRepository dynamicRuleQueryRepository;
     private final RuleStatsService ruleStatsService;
 
     private static final Logger logger = LoggerFactory.getLogger(RecommendationDynamicRuleService.class);
 
     public RecommendationDynamicRuleService(DynamicRuleRepository dynamicRuleRepository,
-                                            DynamicRuleQueryRepository dynamicRuleQueryRepository,
                                             RuleStatsService ruleStatsService) {
         this.dynamicRuleRepository = dynamicRuleRepository;
-        this.dynamicRuleQueryRepository = dynamicRuleQueryRepository;
         this.ruleStatsService = ruleStatsService;
     }
 
