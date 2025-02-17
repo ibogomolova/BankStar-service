@@ -48,6 +48,11 @@ public class DynamicRuleQuery {
     public DynamicRuleQuery() {
     }
 
+    public DynamicRuleQuery(String query, List<String> arguments) {
+        this.query = query;
+        this.arguments = arguments;
+    }
+
     @Override
     public boolean equals(Object object) {
         if (this == object) return true;

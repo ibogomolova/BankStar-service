@@ -174,7 +174,7 @@ public class RecommendationService {
      * @param productType тип продукта для проверки
      * @return true, если пользователь использует продукт, false в противном случае
      */
-    private boolean processUserOfQuery(UUID userId, String productType) {
+    boolean processUserOfQuery(UUID userId, String productType) {
         return recommendationsRepository.usesProductOfType(userId, productType);
     }
 
@@ -191,7 +191,7 @@ public class RecommendationService {
      * @param userId      уникальный идентификатор пользователя, для которого производится оценка
      * @return true, если пользователь является активным пользователем продукта, false в противном случае
      */
-    private boolean processActiveUserOfQuery(ProductType productType, UUID userId) {
+    boolean processActiveUserOfQuery(ProductType productType, UUID userId) {
         return recommendationsRepository.isActiveUserOfProduct(productType, userId);
     }
 
