@@ -238,18 +238,4 @@ public class RecommendationsRepository {
             return null;
         }
     }
-
-
-    /**
-     * Проверяет, существует ли пользователь с указанным именем.
-     *
-     * @param userName имя пользователя
-     * @return true, если пользователь существует, false - в противном случае
-     */
-    public boolean validateUserNameInDataBase(String userName) {
-        String sql = "SELECT COUNT(*) FROM users WHERE username = ?";
-        Integer count = jdbcTemplate.queryForObject(sql, new Object[]{userName}, Integer.class);
-
-        return count != null && count > 0;
-    }
 }
