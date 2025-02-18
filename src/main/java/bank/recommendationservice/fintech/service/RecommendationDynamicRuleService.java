@@ -94,11 +94,22 @@ public class RecommendationDynamicRuleService {
      *
      * @return список динамических правил
      */
-
     public List<DynamicRule> getAllDynamicRules() {
         return Collections.unmodifiableList(dynamicRuleRepository.findAll());
     }
 
+
+    /**
+     * Проверяет, все ли запросы в данной коллекции являются допустимыми и имеют корректные аргументы.
+     * <p>
+     * Проверяет, все ли запросы имеют допустимый тип запроса и корректные аргументы в соответствии с типом запроса.
+     * Если какой-либо запрос является недопустимым, выбрасывается исключение.
+     * <p>
+     *
+     * @param queries запросы для проверки
+     * @throws UnknownQueryTypeException      если какой-либо запрос имеет неизвестный тип
+     * @throws IllegalQueryArgumentsException если какой-либо запрос имеет недопустимые аргументы
+     */
     private void evaluateQueries(Collection<DynamicRuleQuery> queries) {
         for (DynamicRuleQuery query : queries) {
             if (!QueryType.isValidQuery(query.getQuery())) {
@@ -141,6 +152,17 @@ public class RecommendationDynamicRuleService {
         logger.info("All queries passed validation");
     }
 
+
+    /**
+     * Проверяет, является ли заданный запрос корректным запросом USER_OF.
+     * <p>
+     * Проверяет, имеет ли запрос ровно один аргумент, и является ли аргумент корректным типом продукта.
+     * Если запрос не корректен, бросается исключение.
+     * <p>
+     *
+     * @param arguments аргументы запроса, которые нужно проверить
+     * @throws IllegalQueryArgumentsException если запрос не корректен
+     */
     private void handleUserOfQuery(List<String> arguments) {
         if (arguments.size() != 1) {
             logger.error("USER_OF содержит некорректное количество аргументов: {}", arguments.size());
@@ -155,6 +177,17 @@ public class RecommendationDynamicRuleService {
         }
     }
 
+
+    /**
+     * Проверяет, является ли заданный запрос корректным запросом ACTIVE_USER_OF.
+     * <p>
+     * Проверяет, имеет ли запрос ровно один аргумент, и является ли аргумент корректным типом продукта.
+     * Если запрос не корректен, бросается исключение.
+     * <p>
+     *
+     * @param arguments аргументы запроса, которые нужно проверить
+     * @throws IllegalQueryArgumentsException если запрос не корректен
+     */
     private void handleActiveUserOfQuery(List<String> arguments) {
         if (arguments.size() != 1) {
             logger.error("ACTIVE_USER_OF содержит некорректное количество аргументов: {}", arguments.size());
@@ -169,6 +202,16 @@ public class RecommendationDynamicRuleService {
         }
     }
 
+
+    /**
+     * Проверяет корректность запроса TRANSACTION_SUM_COMPARE, проверяя количество аргументов
+     * и тип каждого аргумента. Ожидаемые аргументы: тип продукта, тип транзакции,
+     * тип сравнения, целое число.
+     *
+     * @param arguments список аргументов запроса, которые необходимо проверить
+     * @throws IllegalQueryArgumentsException если количество аргументов неправильное
+     *                                        или если какой-либо аргумент имеет неправильный тип
+     */
     private void handleTransactionSumCompareQuery(List<String> arguments) {
         if (arguments.size() != 4) {
             logger.error("TRANSACTION_SUM_COMPARE содержит некорректное количество аргументов: {}", arguments.size());
@@ -189,6 +232,15 @@ public class RecommendationDynamicRuleService {
         }
     }
 
+
+    /**
+     * Проверяет корректность запроса TRANSACTION_SUM_COMPARE_DEPOSIT_WITHDRAW, проверяя количество аргументов
+     * и тип каждого аргумента. Ожидаемые аргументы: тип продукта, тип сравнения.
+     *
+     * @param arguments список аргументов запроса, которые необходимо проверить
+     * @throws IllegalQueryArgumentsException если количество аргументов неправильное
+     *                                        или если какой-либо аргумент имеет неправильный тип
+     */
     private void handleTransactionSumCompareDepositWithdrawQuery(List<String> arguments) {
         if (arguments.size() != 2) {
             logger.error("TRANSACTION_SUM_COMPARE_DEPOSIT_WITHDRAW содержит некорректное количество аргументов: {}", arguments.size());
