@@ -26,7 +26,7 @@ public class DynamicRuleQuery {
     private Long id;
 
     @Column(name = "query", nullable = false)
-    @Schema(description = "Строка запроса", example = "transactions.amount > ?")
+    @Schema(description = "Строка запроса", example = "USER_OF")
     private String query;
 
     @ElementCollection
