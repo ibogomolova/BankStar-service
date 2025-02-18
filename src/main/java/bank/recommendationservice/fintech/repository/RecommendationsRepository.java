@@ -246,11 +246,10 @@ public class RecommendationsRepository {
      * @param userName имя пользователя
      * @return true, если пользователь существует, false - в противном случае
      */
-    public boolean validateUserName(String userName) {
+    public boolean validateUserNameInDataBase(String userName) {
         String sql = "SELECT COUNT(*) FROM users WHERE username = ?";
         Integer count = jdbcTemplate.queryForObject(sql, new Object[]{userName}, Integer.class);
 
         return count != null && count > 0;
     }
 }
-

@@ -49,4 +49,3 @@ public class DebitDepositsTotalGreaterThanWithdraws implements Rule {
         return debitDepositsTotal > debitWithdrawsTotal;
     }
 }
-

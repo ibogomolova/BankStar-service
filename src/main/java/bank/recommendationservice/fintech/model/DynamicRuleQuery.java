@@ -48,12 +48,20 @@ public class DynamicRuleQuery {
     public DynamicRuleQuery() {
     }
 
+    public DynamicRuleQuery(String query, List<String> arguments) {
+        this.query = query;
+        this.arguments = arguments;
+    }
+
     @Override
     public boolean equals(Object object) {
         if (this == object) return true;
         if (object == null || getClass() != object.getClass()) return false;
         DynamicRuleQuery that = (DynamicRuleQuery) object;
-        return negate == that.negate && Objects.equals(id, that.id) && Objects.equals(query, that.query) && Objects.equals(arguments, that.arguments);
+        return negate == that.negate
+                && Objects.equals(id, that.id)
+                && Objects.equals(query, that.query)
+                && Objects.equals(arguments, that.arguments);
     }
 
     @Override
