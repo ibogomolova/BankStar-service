@@ -1,12 +1,19 @@
 package bank.recommendationservice.fintech.repository;
 
 import bank.recommendationservice.fintech.exception.NullArgumentException;
+import bank.recommendationservice.fintech.exception.UnknownComparisonTypeException;
+import bank.recommendationservice.fintech.exception.UserNotFoundException;
+import bank.recommendationservice.fintech.other.ComparisonType;
+import bank.recommendationservice.fintech.other.ProductType;
+import bank.recommendationservice.fintech.other.TransactionType;
 import com.github.benmanes.caffeine.cache.Cache;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.UUID;
@@ -27,12 +34,15 @@ class RecommendationsRepositoryTest {
     @InjectMocks
     private RecommendationsRepository recommendationsRepository;
 
-    private final UUID userId = UUID.randomUUID();
-    private final String productType = "testProductType";
+    private UUID userId;
+    private String productType;
 
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
+        userId = UUID.randomUUID();
+        productType = "DEBIT";
+
     }
 
     @Test   // Тестирование метода usesProductOfType, когда продукт существует
@@ -209,4 +219,113 @@ class RecommendationsRepositoryTest {
         assertEquals("userId не должен быть пустым", exception.getMessage());
     }
 
+
+    @Test
+    void testIsActiveUserOfProduct_ProductTypeNull() {
+        // test & check
+        NullArgumentException exception = assertThrows(NullArgumentException.class, () -> {
+            recommendationsRepository.isActiveUserOfProduct(null, userId);
+        });
+        assertEquals("productType не должен быть пустым", exception.getMessage());
+    }
+
+    @Test
+    void testIsActiveUserOfProduct_UserIdNull() {
+        // test & check
+        NullArgumentException exception = assertThrows(NullArgumentException.class, () -> {
+            recommendationsRepository.isActiveUserOfProduct(ProductType.DEBIT, null);
+        });
+        assertEquals("userId не должен быть пустым", exception.getMessage());
+    }
+
+
+    @Test
+    void testCompareTransactionSum() {
+        // data
+        UUID userId = UUID.randomUUID();
+        ProductType productType = ProductType.DEBIT;
+        TransactionType transactionType = TransactionType.DEPOSIT;
+        ComparisonType comparisonType = ComparisonType.GREATER_THAN;
+        int constant = 100;
+
+        String sql = "SELECT SUM(amount) FROM transactions t JOIN products p on t.PRODUCT_ID = p.ID WHERE p.TYPE = ? AND transaction_type = ? AND t.user_id = ?";
+        when(jdbcTemplate.queryForObject(sql, Integer.class, productType.name(), transactionType.name(), userId)).thenReturn(150);
+
+        // test
+        boolean result = recommendationsRepository.compareTransactionSum(productType, transactionType, userId, comparisonType, constant);
+
+        // check
+        assertTrue(result);
+    }
+
+    @Test
+    void testCompareTransactionSum_UnknownComparisonType() {
+        // data
+        UUID userId = UUID.randomUUID();
+        ProductType productType = ProductType.DEBIT;
+        TransactionType transactionType = TransactionType.DEPOSIT;
+        String unknownComparisonType = "UNKNOWN_COMPARISON_TYPE";
+
+        // test & check
+        UnknownComparisonTypeException exception = assertThrows(UnknownComparisonTypeException.class, () -> {
+            recommendationsRepository.compareTransactionSum(productType, transactionType, userId, ComparisonType.fromString(unknownComparisonType), 100);
+        });
+        assertEquals("Неизвестный тип сравнения: "+ unknownComparisonType, exception.getMessage());
+    }
+
+
+    @Test
+    void testCompareDepositWithdrawSum() {
+        // data
+        UUID userId = UUID.randomUUID();
+        ProductType productType = ProductType.DEBIT;
+        ComparisonType comparisonType = ComparisonType.GREATER_THAN;
+
+        String depositQuery = "SELECT SUM(amount) FROM transactions t JOIN products p on t.PRODUCT_ID = p.ID WHERE p.TYPE = ? AND t.TYPE = 'DEPOSIT' AND t.user_id = ?";
+        String withdrawQuery = "SELECT SUM(amount) FROM transactions t JOIN products p on t.PRODUCT_ID = p.ID WHERE p.TYPE = ? AND t.TYPE = 'WITHDRAW' AND t.user_id = ?";
+        when(jdbcTemplate.queryForObject(depositQuery, Integer.class, productType.name(), userId)).thenReturn(200);
+        when(jdbcTemplate.queryForObject(withdrawQuery, Integer.class, productType.name(), userId)).thenReturn(100);
+
+        // test
+        boolean result = recommendationsRepository.compareDepositWithdrawSum(productType, userId, comparisonType);
+
+        // check
+        assertTrue(result);
+    }
+
+    @Test
+    void testGetUserIdByUserName_UserNameNull() {
+        // test & check
+        assertThrows(UserNotFoundException.class, () -> {
+            recommendationsRepository.getUserIdByUserName(null);
+        });
+    }
+
+    @Test
+    void testGetUserIdByUserName_UserNotFound() {
+        // data
+        String sql = "SELECT id FROM users WHERE username = ?";
+        when(jdbcTemplate.queryForObject(sql, new Object[]{userId}, UUID.class)).thenThrow(new EmptyResultDataAccessException(1));
+
+        // test & check
+        assertThrows(UserNotFoundException.class, () -> {
+            recommendationsRepository.getUserIdByUserName("nonexistentUser");
+        });
+    }
+
+
+    @Test
+    void testGetFullNameByUsername_MultipleUsersFound() {
+        // data
+        String sql = "SELECT first_name, last_name FROM users WHERE username = ?";
+        when(jdbcTemplate.queryForObject(sql, new Object[]{"duplicateUser"}, (rs, rowNum) -> {
+            throw new IncorrectResultSizeDataAccessException(1);
+        })).thenThrow(new IncorrectResultSizeDataAccessException(1));
+
+        // test
+        String fullName = recommendationsRepository.getFullNameByUsername("duplicateUser");
+
+        // check
+        assertNull(fullName);
+    }
 }
