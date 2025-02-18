@@ -17,7 +17,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 @Service
 public class RecommendationService {
@@ -78,6 +81,23 @@ public class RecommendationService {
         return allRecommendations;
     }
 
+
+    /**
+     * Извлекает список рекомендаций для заданного пользователя на основе динамических и стандартных правил.
+     *
+     * <p>Этот метод оценивает как динамические, так и стандартные правила рекомендаций для заданного
+     * пользователя. Он извлекает уникальный идентификатор пользователя из репозитория, используя
+     * переданный userName. Затем он извлекает все динамические правила из репозитория и оценивает
+     * их для пользователя. Если динамическое правило удовлетворено, создается соответствующий
+     * RecommendationDTO и добавляется в список. Затем применяются предопределенные наборы
+     * правил для генерации стандартных рекомендаций. Оба набора рекомендаций объединяются
+     * и возвращаются в качестве результата.
+     *
+     * @param userName имя пользователя, для которого извлекаются рекомендации
+     * @return список объектов RecommendationDTO, содержащих рекомендации для пользователя
+     * @throws NullArgumentException если динамическое правило или userId равно null
+     * @throws UserNotFoundException если пользователь с переданным именем не найден
+     */
     public List<RecommendationDTO> getRecommendations(String userName) {
         try {
             UUID userId = recommendationsRepository.getUserIdByUserName(userName);
@@ -107,13 +127,19 @@ public class RecommendationService {
         }
     }
 
+
     /**
-     * Оценивает динамические правила для заданного пользователя.
+     * Оценивает предоставленное динамическое правило для указанного пользователя.
      *
-     * @param rule   - динамическое правило для оценки
-     * @param userId - идентификатор пользователя
-     * @return true, если правило оценивается как true, false в противном случае
-     * @throws NullArgumentException если rule - null
+     * <p>Этот метод проверяет, является ли данное динамическое правило null или имеет пустые запросы,
+     * записывая соответствующие предупреждения и возвращая false в таких случаях. Для каждого запроса в
+     * динамическом правиле определяется тип запроса и обрабатывается соответствующим образом.
+     * Если в процессе обработки запроса происходит исключение, оно регистрируется, и возвращается false.
+     *
+     * @param rule   динамическое правило для оценки
+     * @param userId уникальный идентификатор пользователя, для которого оценивается правило
+     * @return true, если правило успешно оценено и условия выполнены, false в противном случае
+     * @throws NullArgumentException если динамическое правило null
      */
     public boolean evaluateDynamicRules(DynamicRule rule, UUID userId) {
         if (rule == null) {
