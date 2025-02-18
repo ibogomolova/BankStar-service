@@ -133,7 +133,7 @@ class RuleStatsServiceTest {
 
     @Test
     @DisplayName("Увеличивает счетчик у существующего правила")
-    void increaseCounter_success() {
+    void increaseCounter_positive() {
         RuleStats ruleStats = new RuleStats();
         ruleStats.setCount(10);
 
@@ -156,7 +156,8 @@ class RuleStatsServiceTest {
     }
 
     @Test
-    void deleteRuleStats_success() {
+    @DisplayName("Удаляет счетчик срабатываний")
+    void deleteRuleStats() {
         //test & check
         ruleStatsService.deleteRuleStats(ruleId);
         verify(ruleStatsRepository, times(1)).deleteByDynamicRuleId(ruleId);
