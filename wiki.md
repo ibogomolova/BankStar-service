@@ -38,26 +38,36 @@
 •   `POST /rule`: Создает новое динамическое правило.
 •   `DELETE /rule/{id}`: Удаляет динамическое правило по его ID.
 •   `GET /rule`: Получает список всех динамических правил.
+•   `GET /rule/stats` : Получает список всех счетчиков срабатываний динамических правил
+
+•   **Management**
+•   `POST /management/clear-caches` : Сбрасывает кэш всех запросов
+•   `GET /management/info` : Возвращает название и версию приложения
 
 ## Обработка ошибок
 
 Сервис обрабатывает следующие исключения:
+•   `BaseBadRequestException`: Родитель для всех ответов типа BAD REQUEST и производных от него исключений
 
-•   `RulesNotFoundException`: Когда не найдено ни одного подходящего правила.
+•   `BaseNotFoundExceprion` : Родитель для всех ответов типа NOT FOUND и производных от него исключений
 
-•   `RecommendationNotFoundException`: Когда не найдено ни одной рекомендации для пользователя.
+•   `IllegalQueryArgumentsException`: Когда переданы некорректные аргументы в запросе Query.
 
-•   `NoTransactionsFoundException`: Когда у пользователя нет транзакций.
+•   `NullArgumentException` : Когда в метод передан аргумент со значением null
 
-•   `NullArgumentException`: Когда передан null аргумент.
+•   `RepositoryNotInitializedException`: Когда произошла ошибка при инициализации репозитория.
+
+•   `RulesNotFoundException`: Когда не найдено правило для обработки.
+
+•   `UnknownProductTypeException` : Когда тип продукта неизвестен.
 
 •   `UnknownQueryTypeException`: Когда тип запроса неизвестен.
 
-•  `UnknownTransactionType`: Когда тип транзакции неизвестен.
+•   `UnknownTransactionType`: Когда тип транзакции неизвестен.
 
-•  `UnknownComparisonTypeException`: Когда тип сравнения неизвестен.
+•   `UnknownComparisonTypeException`: Когда тип сравнения неизвестен.
 
-•   `RepositoryNotInitializedException`: Когда произошла ошибка при инициализации репозитория.
+•   `UserNotFoundException` : Когда пользователь не найден. Используется в обработке запроса из телеграм-бота
 
 •   `Exception`: Для всех непредвиденных ошибок.
 

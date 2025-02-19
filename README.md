@@ -237,13 +237,6 @@ mvn test
 deployment в Kubernetes.
 
 
-## FAQ
-
-▌Какие типы исключений обрабатываются?
-Обрабатываются RulesNotFoundException, RecommendationNotFoundException, NoTransactionsFoundException и
-IllegalArgumentException.
-
-
 ## Команда проекта
 
 - [Irina bogomolova](https://github.com/samka-bogomola-02) — TeamLead
