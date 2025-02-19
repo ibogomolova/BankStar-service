@@ -1,11 +1,8 @@
-# Recommendation Service for Fintech
+# StarBank Recommendation Service
 
-Сервис рекомендаций предоставляет персонализированные предложения для клиентов SkyPro School на основе их транзакций и
-динамических правил.
+Сервис рекомендаций предоставляет персонализированные предложения для клиентов на основе их транзакций по статическим
+(вшитым в исходный код) и динамическим правилам.
 
-[![Build Status](https://travis-ci.org/joemccann/dillinger.svg?branch=master)](https://travis-ci.org/joemccann/dillinger)
-[![Coverage Status](https://coveralls.io/repos/github/joemccann/dillinger/badge.svg?branch=master)](https://coveralls.io/github/joemccann/dillinger?branch=master)
-(здесь нужно добавить значки сборки и покрытия, а выше две строчки удалить
 
 1. Build Status (Статус сборки)
 
@@ -65,20 +62,31 @@ mvn clean install
 
 ```
 sh
-docker run -d --name postgres -p 5432:5432 -e POSTGRES_USER=youruser -e POSTGRES_PASSWORD=yourpassword -e POSTGRES_DB=yourdb postgres:15
+docker run -d --name postgres -p 5432:5432 -e POSTGRES_USER=bankStar -e POSTGRES_PASSWORD=2222 -e POSTGRES_DB=DynamicRules postgres:15
 ```
 
 2. Настройте application.properties:
 
 ```
 properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/yourdb
-spring.datasource.username=youruser
-spring.datasource.password=yourpassword
-spring.jpa.hibernate.ddl-auto=update
+spring.application.name=fintech
+build.version=1.0.0
+application.fintech_service-db.url=jdbc:h2:file:./src/main/resources/transaction
+#spring.datasource.driver-class-name=org.h2.Driver
+#spring.h2.console.enabled=true
+#spring.h2.console.path=/h2-console
+
+spring.datasource.url=jdbc:postgresql://localhost:5432/DynamicRules
+spring.datasource.username=bankStar
+spring.datasource.password=2222
+spring.datasource.driver-class-name=org.postgresql.Driver
+spring.liquibase.default-schema=public
+
+spring.jpa.hibernate.ddl-auto=validate
+spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
-spring.application.name=fintech-recommendation-service
-build.version=1.0
+
+spring.liquibase.change-log=classpath:db/changelog-master.yml
 ```
 
 3. Запуск приложения:
@@ -160,16 +168,6 @@ mvn test
 При изменения в main ветке запускается workflow, который выполняет сборку приложения, создает Docker образ и выполняет
 deployment в Kubernetes.
 
-## Contributing
-
-Мы приветствуем вклад в проект!
-Для этого:
-
-1. Создайте форк репозитория.
-2. Сделайте ваши изменения в новой ветке.
-3. Оформите Pull Request в главную ветку main.
-
-Пожалуйста, соблюдайте код-стайл и пишите информативные commit message.
 
 ## FAQ
 
@@ -177,13 +175,6 @@ deployment в Kubernetes.
 Обрабатываются RulesNotFoundException, RecommendationNotFoundException, NoTransactionsFoundException и
 IllegalArgumentException.
 
-## To do
-
-- [x] Написать подробный README
-- [x] Сделать Swagger документацию
-- [x] Добавить Javadoc к контроллерам и моделям
-- [ ] Написать тесты
-- [ ] Сделать CI/CD
 
 ## Команда проекта
 
@@ -192,7 +183,6 @@ IllegalArgumentException.
 - [Vitaly Dineka](https://github.com/Rafnes) — Developer
 - [Ivan Pesterev](https://github.com/gface34rus) — QA
 
-место для счастливой фотки команды
 
 ## Источники
 
@@ -200,5 +190,3 @@ IllegalArgumentException.
 - Swagger Documentation (https://swagger.io/docs/)
 
 ```
-5. Дополнительные замечания
- удалить блок, если не нужен  
