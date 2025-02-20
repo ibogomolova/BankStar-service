@@ -83,6 +83,6 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleUserNotFoundException(Exception ex) {
         logger.error("Пользователь не найден: " + ex.getMessage());
         return new ResponseEntity<>("Пользователь не найден " + ex.getMessage(),
-                HttpStatus.BAD_REQUEST);
+                HttpStatus.NOT_FOUND);
     }
 }
