@@ -2,6 +2,7 @@ package bank.recommendationservice.fintech.repository;
 
 import bank.recommendationservice.fintech.exception.NullArgumentException;
 import bank.recommendationservice.fintech.exception.UnknownComparisonTypeException;
+import bank.recommendationservice.fintech.exception.UserNotFoundException;
 import bank.recommendationservice.fintech.other.ComparisonType;
 import bank.recommendationservice.fintech.other.ProductType;
 import bank.recommendationservice.fintech.other.TransactionType;
@@ -212,7 +213,14 @@ public class RecommendationsRepository {
      */
     public UUID getUserIdByUserName(String userName) {
         String sql = "SELECT id FROM users WHERE username = ?";
-        return jdbcTemplate.queryForObject(sql, new Object[]{userName}, UUID.class);
+
+        UUID result = jdbcTemplate.queryForObject(sql, new Object[]{userName}, UUID.class);
+        if (result == null) {
+            logger.error("Пользователь {} не найден", userName);
+            throw new UserNotFoundException("Пользователь не найден");
+        } else {
+            return result;
+        }
     }
 
 
@@ -237,19 +245,5 @@ public class RecommendationsRepository {
             logger.error("Найдено несколько пользователей с юзернеймом {}", username);
             return null;
         }
-    }
-
-
-    /**
-     * Проверяет, существует ли пользователь с указанным именем.
-     *
-     * @param userName имя пользователя
-     * @return true, если пользователь существует, false - в противном случае
-     */
-    public boolean validateUserName(String userName) {
-        String sql = "SELECT COUNT(*) FROM users WHERE username = ?";
-        Integer count = jdbcTemplate.queryForObject(sql, new Object[]{userName}, Integer.class);
-
-        return count != null && count > 0;
     }
 }

@@ -1,13 +1,9 @@
-# Recommendation Service for Fintech
+# StarBank Recommendation Service
 
-Сервис рекомендаций предоставляет персонализированные предложения для клиентов SkyPro School на основе их транзакций и
-динамических правил.
+Сервис рекомендаций предоставляет персонализированные предложения для клиентов на основе их транзакций по статическим
+(вшитым в исходный код) и динамическим правилам.
 
-[![Build Status](https://travis-ci.org/joemccann/dillinger.svg?branch=master)](https://travis-ci.org/joemccann/dillinger)
-[![Coverage Status](https://coveralls.io/repos/github/joemccann/dillinger/badge.svg?branch=master)](https://coveralls.io/github/joemccann/dillinger?branch=master)
-(здесь нужно добавить значки сборки и покрытия, а выше две строчки удалить
 
-1. Build Status (Статус сборки)
 
 • Сервисы CI/CD:
 • GitHub Actions: Если вы используете GitHub Actions, URL-адрес статуса сборки можно получить из настроек вашего
@@ -26,8 +22,6 @@
 - [Использование API](#использование-api)
 - [Тестирование](#тестирование)
 - [Deploy и CI/CD](#deploy-и-cicd)
-- [Contributing](#contributing)
-- [To do](#to-do)
 - [Команда проекта](#команда-проекта)
 
 ## Технологии
@@ -59,28 +53,46 @@ sh
 mvn clean install
 ```
 
-▌Запуск приложения
+## Запуск приложения
 
 1. Запуск PostgreSQL с помощью Docker:
 
 ```
 sh
-docker run -d --name postgres -p 5432:5432 -e POSTGRES_USER=youruser -e POSTGRES_PASSWORD=yourpassword -e POSTGRES_DB=yourdb postgres:15
+docker run -d --name postgres -p 5432:5432 -e POSTGRES_USER=bankStar -e POSTGRES_PASSWORD=2222 -e POSTGRES_DB=DynamicRules postgres:15
 ```
 
 2. Настройте application.properties:
 
 ```
 properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/yourdb
-spring.datasource.username=youruser
-spring.datasource.password=yourpassword
-spring.jpa.hibernate.ddl-auto=update
+spring.application.name=fintech
+build.version=1.0.0
+application.fintech_service-db.url=jdbc:h2:file:./src/main/resources/transaction
+#spring.datasource.driver-class-name=org.h2.Driver
+#spring.h2.console.enabled=true
+#spring.h2.console.path=/h2-console
+
+spring.datasource.url=jdbc:postgresql://localhost:5432/DynamicRules
+spring.datasource.username=bankStar
+spring.datasource.password=2222
+spring.datasource.driver-class-name=org.postgresql.Driver
+spring.liquibase.default-schema=public
+
+spring.jpa.hibernate.ddl-auto=validate
+spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
-spring.application.name=fintech-recommendation-service
-build.version=1.0
+
+spring.liquibase.change-log=classpath:db/changelog-master.yml
 ```
 
+Для запуска телеграм-бота создайте файл tg_token.properties в директории src/main/resources c токеном:
+
+```
+properties
+bot.token=[bot_token]
+```
+, где вместо [bot_token] введите API KEY бота.
 3. Запуск приложения:
 
 ```
@@ -143,6 +155,71 @@ http
 GET /rule
 ```
 
+▍Получить список срабатываний динамических правил
+
+```
+http
+GET /rule/stats
+```
+
+▍Получить название и версию приложения
+
+```
+http
+GET /management/info
+```
+
+▍Cбросить кэш всех запросов
+
+```
+http
+GET /management/clear-caches
+```
+
+## Поддерживаемые запросы для добавления динамических правил
+1. Является пользователем продукта — <b>USER_OF </b>
+Этот запрос проверяет, является ли пользователь, для которого ведется поиск рекомендаций, 
+пользователем продукта X, где X — это первый аргумент запроса.
+
+Данный запрос принимает только один аргумент:
+
+<b>DEBIT, CREDIT, INVEST, SAVING </b>
+
+2. Является активным пользователем продукта — <b>ACTIVE_USER_OF</b>
+Этот запрос проверяет, является ли пользователь, для которого ведется поиск рекомендаций, активным пользователем продукта X,
+где X — это первый аргумент запроса.
+
+Активный пользователь продукта X — это пользователь, у которого есть хотя бы пять транзакций по продуктам данного типа X.
+
+3.  Сравнение суммы транзакций с константой — <b>TRANSACTION_SUM_COMPARE</b>
+    Этот запрос сравнивает сумму всех транзакций типа Y по продуктам типа X с некоторой константой C.
+
+Где X — первый аргумент запроса, Y — второй аргумент запроса, а C — четвертый аргумент запроса.
+
+Поддерживаемые типы транзакций (второй аргумент):
+
+**DEPOSIT**, **WITHDRAW**
+
+Сама операция сравнения — O — может быть одной из пяти операций:
+
+
+**">"** — сумма строго больше числа C.
+
+**"<"** — сумма строго меньше числа C.
+ 
+**"="** — сумма строго равна числу C.
+
+**">="**— сумма больше или равна числу C.
+
+**"<="** — сумма меньше или равна числу C.
+
+4. Сравнение суммы пополнений с тратами по всем продуктам одного типа — **TRANSACTION_SUM_COMPARE_DEPOSIT_WITHDRAW**
+Этот запрос сравнивает сумму всех транзакций типа **DEPOSIT**
+с суммой всех транзакций типа **WITHDRAW**
+по продукту X.
+
+Где X — первый аргумент запроса, а операция сравнения — второй аргумент запроса.
+
 ## Тестирование
 
 В проекте используются JUnit и Mockito для тестирования.
@@ -160,39 +237,14 @@ mvn test
 При изменения в main ветке запускается workflow, который выполняет сборку приложения, создает Docker образ и выполняет
 deployment в Kubernetes.
 
-## Contributing
-
-Мы приветствуем вклад в проект!
-Для этого:
-
-1. Создайте форк репозитория.
-2. Сделайте ваши изменения в новой ветке.
-3. Оформите Pull Request в главную ветку main.
-
-Пожалуйста, соблюдайте код-стайл и пишите информативные commit message.
-
-## FAQ
-
-▌Какие типы исключений обрабатываются?
-Обрабатываются RulesNotFoundException, RecommendationNotFoundException, NoTransactionsFoundException и
-IllegalArgumentException.
-
-## To do
-
-- [x] Написать подробный README
-- [x] Сделать Swagger документацию
-- [x] Добавить Javadoc к контроллерам и моделям
-- [ ] Написать тесты
-- [ ] Сделать CI/CD
 
 ## Команда проекта
 
-- [Irina bogomolova](https://github.com/samka-bogomola-02) — TeamLead
+- [Irina bogomolova](https://github.com/ibogomolova) — TeamLead
 - [Alina Cheremiskina](https://github.com/linskay) — PM
 - [Vitaly Dineka](https://github.com/Rafnes) — Developer
 - [Ivan Pesterev](https://github.com/gface34rus) — QA
 
-место для счастливой фотки команды
 
 ## Источники
 
@@ -200,5 +252,3 @@ IllegalArgumentException.
 - Swagger Documentation (https://swagger.io/docs/)
 
 ```
-5. Дополнительные замечания
- удалить блок, если не нужен  

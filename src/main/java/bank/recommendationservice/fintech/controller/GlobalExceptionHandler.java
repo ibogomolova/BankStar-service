@@ -1,9 +1,6 @@
 package bank.recommendationservice.fintech.controller;
 
-import bank.recommendationservice.fintech.exception.BaseBadRequestException;
-import bank.recommendationservice.fintech.exception.BaseNotFoundException;
-import bank.recommendationservice.fintech.exception.RepositoryNotInitializedException;
-import bank.recommendationservice.fintech.exception.RulesNotFoundException;
+import bank.recommendationservice.fintech.exception.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -45,5 +42,47 @@ public class GlobalExceptionHandler {
         logger.error("An unexpected error occurred: ", ex);
         return new ResponseEntity<>("An unexpected error occurred: " + ex.getMessage(),
                 HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    @ExceptionHandler(IllegalQueryArgumentsException.class)
+    public ResponseEntity<String> handleIllegalQueryArgumentException(Exception ex) {
+        logger.error("Переданы некорректные аргументы запроса query: " + ex.getMessage());
+        return new ResponseEntity<>("Переданы некорректные аргументы запроса query" + ex.getMessage(),
+                HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(UnknownComparisonTypeException.class)
+    public ResponseEntity<String> handleComparisonTypeException(Exception ex) {
+        logger.error("Передан некорректный тип сравнения: " + ex.getMessage());
+        return new ResponseEntity<>("Передан некорректный тип сравнения " + ex.getMessage(),
+                HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(UnknownProductTypeException.class)
+    public ResponseEntity<String> handleProductTypeException(Exception ex) {
+        logger.error("Передан некорректный тип продукта: " + ex.getMessage());
+        return new ResponseEntity<>("Передан некорректный тип продукта " + ex.getMessage(),
+                HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(UnknownQueryTypeException.class)
+    public ResponseEntity<String> handleQueryTypeException(Exception ex) {
+        logger.error("Передан некорректный тип запроса: " + ex.getMessage());
+        return new ResponseEntity<>("Передан некорректный тип запроса " + ex.getMessage(),
+                HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(UnknownTransactionTypeException.class)
+    public ResponseEntity<String> handleTransactionTypeException(Exception ex) {
+        logger.error("Передан некорректный тип транзакции: " + ex.getMessage());
+        return new ResponseEntity<>("Передан некорректный тип транзакции " + ex.getMessage(),
+                HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<String> handleUserNotFoundException(Exception ex) {
+        logger.error("Пользователь не найден: " + ex.getMessage());
+        return new ResponseEntity<>("Пользователь не найден " + ex.getMessage(),
+                HttpStatus.NOT_FOUND);
     }
 }
