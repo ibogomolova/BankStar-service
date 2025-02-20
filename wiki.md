@@ -53,8 +53,6 @@
 
 •   `IllegalQueryArgumentsException`: Когда переданы некорректные аргументы в запросе Query.
 
-•   `NullArgumentException` : Когда в метод передан аргумент со значением null
-
 •   `RepositoryNotInitializedException`: Когда произошла ошибка при инициализации репозитория.
 
 •   `RulesNotFoundException`: Когда не найдено правило для обработки.

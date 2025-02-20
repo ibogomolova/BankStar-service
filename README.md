@@ -90,8 +90,9 @@ spring.liquibase.change-log=classpath:db/changelog-master.yml
 
 ```
 properties
-bot.token=7964155718:AAGMaPcOKrZawaFIxzJmBSWaR77Nxb9rzJM
+bot.token=[bot_token]
 ```
+, где вместо [bot_token] введите API KEY бота.
 3. Запуск приложения:
 
 ```
@@ -239,7 +240,7 @@ deployment в Kubernetes.
 
 ## Команда проекта
 
-- [Irina bogomolova](https://github.com/samka-bogomola-02) — TeamLead
+- [Irina bogomolova](https://github.com/ibogomolova) — TeamLead
 - [Alina Cheremiskina](https://github.com/linskay) — PM
 - [Vitaly Dineka](https://github.com/Rafnes) — Developer
 - [Ivan Pesterev](https://github.com/gface34rus) — QA
