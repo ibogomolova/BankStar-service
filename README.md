@@ -31,8 +31,14 @@
 - Spring Data JPA (https://spring.io/projects/spring-data-jpa)
 - PostgreSQL (https://www.postgresql.org/)
 - Swagger (https://swagger.io/)
+- Postman (https://www.postman.com/)
 - Lombok (https://projectlombok.org/)
 - Maven (https://maven.apache.org/)
+- Н2 (https://www.h2database.com/html/main.html)
+- Liquibase (https://www.liquibase.com/)
+- JUnit (https://junit.org/junit5/)
+- Mockito (https://site.mockito.org/)
+- Git (https://git-scm.com/)
 
 ## Начало работы
 
