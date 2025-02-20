@@ -55,12 +55,14 @@ mvn clean install
 
 ## Запуск приложения
 
-1. Запуск PostgreSQL с помощью Docker:
+1. Установите и настройте PostgreSQL локально. Вы можете скачать и установить PostgreSQL с официального сайта: PostgreSQL Downloads (https://www.postgresql.org/download/).
 
-```
-sh
-docker run -d --name postgres -p 5432:5432 -e POSTGRES_USER=bankStar -e POSTGRES_PASSWORD=2222 -e POSTGRES_DB=DynamicRules postgres:15
-```
+2. Создайте базу данных и пользователя. Выполните следующие команды в командной строке PostgreSQL (psql):
+   ```
+   CREATE DATABASE DynamicRules;
+   CREATE USER bankStar WITH PASSWORD '2222';
+   GRANT ALL PRIVILEGES ON DATABASE DynamicRules TO bankStar;
+   ```
 
 2. Настройте application.properties:
 
