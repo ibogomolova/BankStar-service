@@ -1,18 +1,11 @@
 # StarBank Recommendation Service
 
+
 Сервис рекомендаций предоставляет персонализированные предложения для клиентов на основе их транзакций по статическим
 (вшитым в исходный код) и динамическим правилам.
 
+[![Build and Test](https://github.com/ibogomolova/BankStar-service/actions/workflows/main.yml/badge.svg?branch=master)](https://github.com/ibogomolova/BankStar-service/actions/workflows/main.yml)
 
-
-• Сервисы CI/CD:
-• GitHub Actions: Если вы используете GitHub Actions, URL-адрес статуса сборки можно получить из настроек вашего
-репозитория:
-
-1. Перейдите в ваш репозиторий на GitHub.
-2. Нажмите на вкладку "Actions".
-3. Выберите ваш workflow.
-4. В разделе "Badge" скопируйте markdown-код)
 
 ## Содержание
 
@@ -22,6 +15,7 @@
 - [Использование API](#использование-api)
 - [Тестирование](#тестирование)
 - [Deploy и CI/CD](#deploy-и-cicd)
+- [Contributing](#contributing)
 - [Команда проекта](#команда-проекта)
 
 ## Технологии
@@ -106,7 +100,6 @@ bot.token=[bot_token]
 ```
 sh
 mvn spring-boot:run
-
 ```
 
 Приложение будет доступно по адресу: http://localhost:8080
@@ -153,7 +146,6 @@ Content-Type: application/json
 ```
 http
 DELETE /rule/{id}
-
 ```
 
 ▍Получить все динамические правила
@@ -245,10 +237,26 @@ mvn test
 При изменения в main ветке запускается workflow, который выполняет сборку приложения, создает Docker образ и выполняет
 deployment в Kubernetes.
 
+## Contributing
+
+Мы приветствуем вклад в проект!
+Для этого:
+
+1. Создайте форк репозитория.
+2. Сделайте ваши изменения в новой ветке.
+3. Оформите Pull Request в ветку dev.
+
+Пожалуйста, соблюдайте code style и пишите информативные commit message.
+
+## FAQ
+
+▌Какие типы исключений обрабатываются?
+Обрабатываются RulesNotFoundException, RecommendationNotFoundException, NoTransactionsFoundException и
+IllegalArgumentException.
 
 ## Команда проекта
 
-- [Irina bogomolova](https://github.com/ibogomolova) — TeamLead
+- [Irina Bogomolova](https://github.com/ibogomolova) — Main developer
 - [Alina Cheremiskina](https://github.com/linskay) — PM
 - [Vitaly Dineka](https://github.com/Rafnes) — Developer
 - [Ivan Pesterev](https://github.com/gface34rus) — QA
@@ -258,5 +266,3 @@ deployment в Kubernetes.
 
 - Spring Boot Documentation (https://spring.io/projects/spring-boot)
 - Swagger Documentation (https://swagger.io/docs/)
-
-```
