@@ -1,11 +1,10 @@
-# Recommendation Service for Fintech
+# StarBank Recommendation Service
 
-Сервис рекомендаций предоставляет персонализированные предложения для клиентов на основе их транзакций и
-динамических правил.
+
+Сервис рекомендаций предоставляет персонализированные предложения для клиентов на основе их транзакций по статическим
+(вшитым в исходный код) и динамическим правилам.
 
 [![Build and Test](https://github.com/ibogomolova/BankStar-service/actions/workflows/main.yml/badge.svg?branch=master)](https://github.com/ibogomolova/BankStar-service/actions/workflows/main.yml)
-
-1. Build Status (Статус сборки)
 
 
 ## Содержание
@@ -26,8 +25,14 @@
 - Spring Data JPA (https://spring.io/projects/spring-data-jpa)
 - PostgreSQL (https://www.postgresql.org/)
 - Swagger (https://swagger.io/)
+- Postman (https://www.postman.com/)
 - Lombok (https://projectlombok.org/)
 - Maven (https://maven.apache.org/)
+- Н2 (https://www.h2database.com/html/main.html)
+- Liquibase (https://www.liquibase.com/)
+- JUnit (https://junit.org/junit5/)
+- Mockito (https://site.mockito.org/)
+- Git (https://git-scm.com/)
 
 ## Начало работы
 
@@ -48,28 +53,48 @@ sh
 mvn clean install
 ```
 
-▌Запуск приложения
+## Запуск приложения
 
-1. Запуск PostgreSQL с помощью Docker:
+1. Установите и настройте PostgreSQL локально. Вы можете скачать и установить PostgreSQL с официального сайта: PostgreSQL Downloads (https://www.postgresql.org/download/).
 
-```
-sh
-docker run -d --name postgres -p 5432:5432 -e POSTGRES_USER=youruser -e POSTGRES_PASSWORD=yourpassword -e POSTGRES_DB=yourdb postgres:15
-```
+2. Создайте базу данных и пользователя. Выполните следующие команды в командной строке PostgreSQL (psql):
+   ```
+   CREATE DATABASE DynamicRules;
+   CREATE USER bankStar WITH PASSWORD '2222';
+   GRANT ALL PRIVILEGES ON DATABASE DynamicRules TO bankStar;
+   ```
 
 2. Настройте application.properties:
 
 ```
 properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/yourdb
-spring.datasource.username=youruser
-spring.datasource.password=yourpassword
-spring.jpa.hibernate.ddl-auto=update
+spring.application.name=fintech
+build.version=1.0.0
+application.fintech_service-db.url=jdbc:h2:file:./src/main/resources/transaction
+#spring.datasource.driver-class-name=org.h2.Driver
+#spring.h2.console.enabled=true
+#spring.h2.console.path=/h2-console
+
+spring.datasource.url=jdbc:postgresql://localhost:5432/DynamicRules
+spring.datasource.username=bankStar
+spring.datasource.password=2222
+spring.datasource.driver-class-name=org.postgresql.Driver
+spring.liquibase.default-schema=public
+
+spring.jpa.hibernate.ddl-auto=validate
+spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
-spring.application.name=fintech-recommendation-service
-build.version=1.0
+
+spring.liquibase.change-log=classpath:db/changelog-master.yml
 ```
 
+Для запуска телеграм-бота создайте файл tg_token.properties в директории src/main/resources c токеном:
+
+```
+properties
+bot.token=[bot_token]
+```
+, где вместо [bot_token] введите API KEY бота.
 3. Запуск приложения:
 
 ```
@@ -102,7 +127,7 @@ POST /rule
 Content-Type: application/json
 
 {
-"productName": "Кредитная карта",
+  "productName": "Кредитная карта",
   "productId": "550e8400-e29b-41d4-a716-446655440000",
   "productText": "Предлагаем вам кредитную карту с выгодными условиями",
   "rule": [
@@ -114,7 +139,6 @@ Content-Type: application/json
         "negate": true
     }
 ]
-}
 ```
 
 ▍Удалить динамическое правило
@@ -130,6 +154,71 @@ DELETE /rule/{id}
 http
 GET /rule
 ```
+
+▍Получить список срабатываний динамических правил
+
+```
+http
+GET /rule/stats
+```
+
+▍Получить название и версию приложения
+
+```
+http
+GET /management/info
+```
+
+▍Cбросить кэш всех запросов
+
+```
+http
+GET /management/clear-caches
+```
+
+## Поддерживаемые запросы для добавления динамических правил
+1. Является пользователем продукта — <b>USER_OF </b>
+Этот запрос проверяет, является ли пользователь, для которого ведется поиск рекомендаций, 
+пользователем продукта X, где X — это первый аргумент запроса.
+
+Данный запрос принимает только один аргумент:
+
+<b>DEBIT, CREDIT, INVEST, SAVING </b>
+
+2. Является активным пользователем продукта — <b>ACTIVE_USER_OF</b>
+Этот запрос проверяет, является ли пользователь, для которого ведется поиск рекомендаций, активным пользователем продукта X,
+где X — это первый аргумент запроса.
+
+Активный пользователь продукта X — это пользователь, у которого есть хотя бы пять транзакций по продуктам данного типа X.
+
+3.  Сравнение суммы транзакций с константой — <b>TRANSACTION_SUM_COMPARE</b>
+    Этот запрос сравнивает сумму всех транзакций типа Y по продуктам типа X с некоторой константой C.
+
+Где X — первый аргумент запроса, Y — второй аргумент запроса, а C — четвертый аргумент запроса.
+
+Поддерживаемые типы транзакций (второй аргумент):
+
+**DEPOSIT**, **WITHDRAW**
+
+Сама операция сравнения — O — может быть одной из пяти операций:
+
+
+**">"** — сумма строго больше числа C.
+
+**"<"** — сумма строго меньше числа C.
+ 
+**"="** — сумма строго равна числу C.
+
+**">="**— сумма больше или равна числу C.
+
+**"<="** — сумма меньше или равна числу C.
+
+4. Сравнение суммы пополнений с тратами по всем продуктам одного типа — **TRANSACTION_SUM_COMPARE_DEPOSIT_WITHDRAW**
+Этот запрос сравнивает сумму всех транзакций типа **DEPOSIT**
+с суммой всех транзакций типа **WITHDRAW**
+по продукту X.
+
+Где X — первый аргумент запроса, а операция сравнения — второй аргумент запроса.
 
 ## Тестирование
 
@@ -177,4 +266,3 @@ IllegalArgumentException.
 
 - Spring Boot Documentation (https://spring.io/projects/spring-boot)
 - Swagger Documentation (https://swagger.io/docs/)
-

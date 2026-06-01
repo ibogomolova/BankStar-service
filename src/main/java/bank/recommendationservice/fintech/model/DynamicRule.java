@@ -59,7 +59,11 @@ public class DynamicRule {
         if (this == object) return true;
         if (object == null || getClass() != object.getClass()) return false;
         DynamicRule that = (DynamicRule) object;
-        return Objects.equals(id, that.id) && Objects.equals(productName, that.productName) && Objects.equals(productId, that.productId) && Objects.equals(productText, that.productText) && Objects.equals(queries, that.queries);
+        return Objects.equals(id, that.id)
+                && Objects.equals(productName, that.productName)
+                && Objects.equals(productId, that.productId)
+                && Objects.equals(productText, that.productText)
+                && Objects.equals(queries, that.queries);
     }
 
     @Override

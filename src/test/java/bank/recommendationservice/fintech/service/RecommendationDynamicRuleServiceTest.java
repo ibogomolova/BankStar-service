@@ -3,7 +3,6 @@ package bank.recommendationservice.fintech.service;
 import bank.recommendationservice.fintech.exception.RulesNotFoundException;
 import bank.recommendationservice.fintech.model.DynamicRule;
 import bank.recommendationservice.fintech.model.DynamicRuleQuery;
-import bank.recommendationservice.fintech.repository.DynamicRuleQueryRepository;
 import bank.recommendationservice.fintech.repository.DynamicRuleRepository;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,8 +24,6 @@ import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RecommendationDynamicRuleServiceTest {
-    @Mock
-    private DynamicRuleQueryRepository dynamicRuleQueryRepository;
     @Mock
     private DynamicRuleRepository dynamicRuleRepository;
     @Mock

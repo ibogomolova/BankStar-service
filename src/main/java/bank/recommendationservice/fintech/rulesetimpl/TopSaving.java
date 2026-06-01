@@ -65,6 +65,7 @@ public class TopSaving implements RecommendationRuleSet {
         boolean depositsGreaterThanOrEqualsTo50k = debitOrSavingDepositsTotalGreaterThanOrEqualsTo50_000.evaluate(userId);
         boolean depositsGreaterThanWithdrawals = debitDepositsTotalGreaterThanWithdraws.evaluate(userId);
 
+
         if (hasDebitProduct && depositsGreaterThanOrEqualsTo50k && depositsGreaterThanWithdrawals) {
             logger.info("Пользователь с ID {}: подходит под рекомендацию. Все условия выполнены", userId);
             return new RecommendationDTO(UUID.fromString("59efc529-2fff-41af-baff-90ccd7402925"),

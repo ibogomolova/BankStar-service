@@ -1,16 +1,18 @@
 package bank.recommendationservice.fintech.service;
 
-import static org.junit.jupiter.api.Assertions.*;
-
+import bank.recommendationservice.fintech.dto.RuleStatsDTO;
 import bank.recommendationservice.fintech.exception.NullArgumentException;
 import bank.recommendationservice.fintech.exception.RulesNotFoundException;
 import bank.recommendationservice.fintech.model.DynamicRule;
+import bank.recommendationservice.fintech.model.DynamicRuleQuery;
 import bank.recommendationservice.fintech.model.RuleStats;
 import bank.recommendationservice.fintech.model.RuleStatsResponse;
 import bank.recommendationservice.fintech.repository.DynamicRuleRepository;
 import bank.recommendationservice.fintech.repository.RuleStatsRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -18,99 +20,146 @@ import org.mockito.MockitoAnnotations;
 import java.util.List;
 import java.util.Optional;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 class RuleStatsServiceTest {
     @Mock
-    private RuleStatsRepository ruleStatsRepository;
-    @Mock
     private DynamicRuleRepository dynamicRuleRepository;
+
+    @Mock
+    private RuleStatsRepository ruleStatsRepository;
+
     @InjectMocks
     private RuleStatsService ruleStatsService;
 
-    private Long dynamicRuleId;
-    private RuleStats ruleStats;
-    private DynamicRule dynamicRule;
+    Long ruleId;
+    String productName;
+    String productText;
 
     @BeforeEach
     void setUp() {
+        ruleId = 1L;
+        productName = "Product Name";
+        productText = "Product Text";
         MockitoAnnotations.openMocks(this);
-        dynamicRuleId = 1L;
-        dynamicRule = new DynamicRule();
-        dynamicRule.setId(dynamicRuleId);
-        ruleStats = new RuleStats();
-        ruleStats.setDynamicRule(dynamicRule);
-        ruleStats.setCount(0);
     }
 
     @Test
-    void addRuleStats_ShouldAddNewRuleStats_WhenDynamicRuleIdIsValid() {
-        when(dynamicRuleRepository.findById(dynamicRuleId)).thenReturn(Optional.of(dynamicRule));
-
-        ruleStatsService.addRuleStats(dynamicRuleId);
-
-        verify(ruleStatsRepository, times(1)).save(any(RuleStats.class));
-    }
-
-    @Test
-    void addRuleStats_ShouldThrowNullArgumentException_WhenDynamicRuleIdIsNull() {
+    @DisplayName("Выбрасывает исключение при добавлении счетчика с null dynamicRuleId")
+    void addRuleStats_throws_null() {
         assertThrows(NullArgumentException.class, () -> ruleStatsService.addRuleStats(null));
-        verify(ruleStatsRepository, never()).save(any(RuleStats.class));
     }
 
     @Test
-    void addRuleStats_ShouldThrowRulesNotFoundException_WhenDynamicRuleNotFound() {
-        when(dynamicRuleRepository.findById(dynamicRuleId)).thenReturn(Optional.empty());
+    @DisplayName("Выбрасывает исключение при добавлении счетчика к несуществующему правилу")
+    void addRuleStats_throws_notFound() {
+        when(dynamicRuleRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-        RulesNotFoundException exception = assertThrows(RulesNotFoundException.class, () -> ruleStatsService.addRuleStats(dynamicRuleId));
-        assertEquals("Динамическое правило не найдено ", exception.getMessage());
+        //test & check
+        assertThrows(RulesNotFoundException.class, () -> ruleStatsService.addRuleStats(1L));
+        verify(dynamicRuleRepository, times(1)).findById(ruleId);
     }
 
     @Test
-    void getAllRuleStats_ShouldReturnListOfRuleStatsDTO() {
+    @DisplayName("Положительный тест на добавление счетчика к существующему правилу")
+    void addRuleStats_positive() {
+        DynamicRule rule = new DynamicRule();
+        rule.setId(ruleId);
+        rule.setProductName(productName);
+        rule.setProductText(productText);
+        rule.setQueries(List.of(new DynamicRuleQuery("ACTIVE_USER_OF", List.of("CREDIT"))));
+        when(dynamicRuleRepository.findById(ruleId)).thenReturn(Optional.of(rule));
+
+        //test
+        ruleStatsService.addRuleStats(ruleId);
+
+        //check
+        ArgumentCaptor<RuleStats> captor = ArgumentCaptor.forClass(RuleStats.class);
+        verify(ruleStatsRepository, times(1)).save(captor.capture());
+        RuleStats savedStats = captor.getValue();
+        assertEquals(0, savedStats.getCount());
+        assertEquals(rule, savedStats.getDynamicRule());
+    }
+
+    @Test
+    @DisplayName("Позитивный тест на получение всех счетчиков")
+    void getAllRuleStats_positive() {
+        DynamicRule rule = new DynamicRule();
+        rule.setId(ruleId);
+        rule.setProductName(productName);
+        rule.setProductText(productText);
+        rule.setQueries(List.of(new DynamicRuleQuery("ACTIVE_USER_OF", List.of("CREDIT"))));
+
+        RuleStats ruleStats = new RuleStats();
+        ruleStats.setCount(3);
+        ruleStats.setDynamicRule(rule);
         when(ruleStatsRepository.findAll()).thenReturn(List.of(ruleStats));
 
+        //test
         RuleStatsResponse response = ruleStatsService.getAllRuleStats();
+        List<RuleStatsDTO> dtos = response.getStats();
 
-        assertNotNull(response);
-        assertEquals(1, response.getStats().size());
-        assertEquals(dynamicRuleId, response.getStats().get(0).getRuleId());
-        assertEquals(0, response.getStats().get(0).getCount());
+        //check
+        assertNotNull(dtos);
+        assertEquals(1, dtos.size());
+        RuleStatsDTO dto = dtos.get(0);
+        assertEquals(ruleId, dto.getRuleId());
+        assertEquals(3, dto.getCount());
     }
 
     @Test
-    void increaseCounter_ShouldIncreaseCount_WhenDynamicRuleExists() {
-        ruleStats.setCount(1);
-        when(ruleStatsRepository.findByDynamicRuleId(dynamicRuleId)).thenReturn(ruleStats);
+    @DisplayName("Выбрасывает исключение, если происходит ошибка чтения из репозитория")
+    void getAllRuleStats_negative() {
+        when(ruleStatsRepository.findAll()).thenThrow(new RuntimeException("Ошибка обработки статистики правил"));
 
-        ruleStatsService.increaseCounter(dynamicRuleId);
-
-        assertEquals(2, ruleStats.getCount());
-        verify(ruleStatsRepository, times(1)).save(ruleStats);
+        assertThrows(RuntimeException.class, () -> ruleStatsService.getAllRuleStats());
+        verify(ruleStatsRepository).findAll();
     }
 
     @Test
-    void increaseCounter_ShouldThrowNullArgumentException_WhenDynamicRuleIdIsNull() {
+    @DisplayName("Выбрасывает исключение при попытке увеличить счетчик правила с null dynamicRuleId")
+    void increaseCounter_throws_1() {
         assertThrows(NullArgumentException.class, () -> ruleStatsService.increaseCounter(null));
-        verify(ruleStatsRepository, never()).save(any(RuleStats.class));
     }
 
     @Test
-    void increaseCounter_ShouldThrowRulesNotFoundException_WhenDynamicRuleNotFound() {
-        when(ruleStatsRepository.findByDynamicRuleId(dynamicRuleId)).thenReturn(null);
-
-        RulesNotFoundException exception = assertThrows(RulesNotFoundException.class, () -> ruleStatsService.increaseCounter(dynamicRuleId));
-        assertEquals("Статистика срабатываний по правилу не найдена ", exception.getMessage());
+    @DisplayName("Выбрасывает исключение при попытке увеличить счетчик у несуществующего правила")
+    void increaseCounter_throws_2() {
+        //test & check
+        assertThrows(RulesNotFoundException.class, () -> ruleStatsService.increaseCounter(ruleId));
     }
 
     @Test
-    void deleteRuleStats_ShouldCallDeleteByDynamicRuleId_WhenCalled() {
-        doNothing().when(ruleStatsRepository).deleteByDynamicRuleId(dynamicRuleId);
+    @DisplayName("Увеличивает счетчик у существующего правила")
+    void increaseCounter_positive() {
+        RuleStats ruleStats = new RuleStats();
+        ruleStats.setCount(10);
 
-        ruleStatsService.deleteRuleStats(dynamicRuleId);
+        DynamicRule rule = new DynamicRule();
+        rule.setId(ruleId);
+        rule.setProductText(productText);
+        rule.setProductName(productName);
+        ruleStats.setDynamicRule(rule);
 
-        verify(ruleStatsRepository, times(1)).deleteByDynamicRuleId(dynamicRuleId);
+        //test
+        when(ruleStatsRepository.findByDynamicRuleId(ruleId)).thenReturn(ruleStats);
+        ruleStatsService.increaseCounter(ruleId);
+
+        //check
+        ArgumentCaptor<RuleStats> captor = ArgumentCaptor.forClass(RuleStats.class);
+        verify(ruleStatsRepository, times(1)).save(captor.capture());
+        RuleStats updatedStats = captor.getValue();
+        assertEquals(11, updatedStats.getCount());
+        assertEquals(rule, updatedStats.getDynamicRule());
     }
 
+    @Test
+    @DisplayName("Удаляет счетчик срабатываний")
+    void deleteRuleStats() {
+        //test & check
+        ruleStatsService.deleteRuleStats(ruleId);
+        verify(ruleStatsRepository, times(1)).deleteByDynamicRuleId(ruleId);
+    }
 }

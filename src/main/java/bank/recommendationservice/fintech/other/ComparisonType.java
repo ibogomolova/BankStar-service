@@ -33,5 +33,3 @@ public enum ComparisonType {
         };
     }
 }
-
-

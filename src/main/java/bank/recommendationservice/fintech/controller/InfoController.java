@@ -43,4 +43,3 @@ public class InfoController {
         return new ResponseEntity<>("Кеш успешно очищен.", HttpStatus.OK);
     }
 }
-

@@ -33,3 +33,4 @@ build/
 .vscode/
 /target/
 /src/main/resources/tg_token.properties
+/src/main/resources/transaction.trace.db

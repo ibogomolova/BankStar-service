@@ -19,11 +19,11 @@ public class SwaggerConfig {
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
-                      
+
                         .title("${spring.application.name}")
                         .version("${build.version}")
                         .description("API для управления новым сервисом Fintech - Recommended Program for SkyPro School"))
-          
+
                 .addTagsItem(new Tag().name("Health Check").description("Эндпоинты для проверки работоспособности приложения"))
                 .addTagsItem(new Tag().name("Recommendation").description("Эндпоинты для управления рекомендациями"))
                 .addTagsItem(new Tag().name("Dynamic Rule").description("Эндпоинты для управления динамическими правилами"));

@@ -100,9 +100,9 @@ public class TelegramBotUpdatesListener implements UpdatesListener {
          * Если пользователь существует, бот отправляет список рекомендаций для него.
          *
          * @param chatId  ID чата, в котором был отправлен запрос
-         * @param userName имя пользователя, для которого нужно получить рекомендации
+         * @param username имя пользователя, для которого нужно получить рекомендации
          */
-  
+
     private void handleRecommendationRequest(long chatId, String username) {
         try {
             List<RecommendationDTO> response = recommendationService.getRecommendations(username);

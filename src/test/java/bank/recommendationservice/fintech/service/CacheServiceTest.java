@@ -1,6 +1,5 @@
 package bank.recommendationservice.fintech.service;
 
-
 import com.github.benmanes.caffeine.cache.Cache;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,5 +44,6 @@ class CacheServiceTest {
 
         assertDoesNotThrow(() -> cacheService.clearCaches());
     }
+
 
 }
