@@ -1,6 +1,6 @@
 # Recommendation Service for Fintech
 
-Сервис рекомендаций предоставляет персонализированные предложения для клиентов SkyPro School на основе их транзакций и
+Сервис рекомендаций предоставляет персонализированные предложения для клиентов на основе их транзакций и
 динамических правил.
 
 [![Build and Test](https://github.com/ibogomolova/BankStar-service/actions/workflows/main.yml/badge.svg?branch=master)](https://github.com/ibogomolova/BankStar-service/actions/workflows/main.yml)
@@ -17,7 +17,6 @@
 - [Тестирование](#тестирование)
 - [Deploy и CI/CD](#deploy-и-cicd)
 - [Contributing](#contributing)
-- [To do](#to-do)
 - [Команда проекта](#команда-проекта)
 
 ## Технологии
@@ -76,7 +75,6 @@ build.version=1.0
 ```
 sh
 mvn spring-boot:run
-
 ```
 
 Приложение будет доступно по адресу: http://localhost:8080
@@ -124,7 +122,6 @@ Content-Type: application/json
 ```
 http
 DELETE /rule/{id}
-
 ```
 
 ▍Получить все динамические правила
@@ -158,9 +155,9 @@ deployment в Kubernetes.
 
 1. Создайте форк репозитория.
 2. Сделайте ваши изменения в новой ветке.
-3. Оформите Pull Request в главную ветку main.
+3. Оформите Pull Request в ветку dev.
 
-Пожалуйста, соблюдайте код-стайл и пишите информативные commit message.
+Пожалуйста, соблюдайте code style и пишите информативные commit message.
 
 ## FAQ
 
@@ -168,17 +165,9 @@ deployment в Kubernetes.
 Обрабатываются RulesNotFoundException, RecommendationNotFoundException, NoTransactionsFoundException и
 IllegalArgumentException.
 
-## To do
-
-- [x] Написать подробный README
-- [x] Сделать Swagger документацию
-- [x] Добавить Javadoc к контроллерам и моделям
-- [ ] Написать тесты
-- [ ] Сделать CI/CD
-
 ## Команда проекта
 
-- [Irina bogomolova](https://github.com/samka-bogomola-02) — TeamLead
+- [Irina Bogomolova](https://github.com/ibogomolova) — Main developer
 - [Alina Cheremiskina](https://github.com/linskay) — PM
 - [Vitaly Dineka](https://github.com/Rafnes) — Developer
 - [Ivan Pesterev](https://github.com/gface34rus) — QA
@@ -189,6 +178,3 @@ IllegalArgumentException.
 - Spring Boot Documentation (https://spring.io/projects/spring-boot)
 - Swagger Documentation (https://swagger.io/docs/)
 
-```
-5. Дополнительные замечания
- удалить блок, если не нужен  
